@@ -15,8 +15,8 @@ public:
     void setText(const std::string& = std::string());
 
 
-    bool isin();    // 判断鼠标是否在按钮上
-    bool isClicked();   // 判断鼠标是否点击了按钮
+    bool isin();        // 鍒ゆ柇榧犳爣鍦ㄦ寜閽笂
+    bool isClicked();   // 鍒ゆ柇鏄惁鐐瑰嚮
 
     void eventLoop(const ExMessage&);
 

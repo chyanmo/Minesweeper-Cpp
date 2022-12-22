@@ -15,13 +15,10 @@ class Game
     };
 public:
     Game();
-    // Æô¶¯
+    
     void run();
-
-    // °´Å¥
+    
     int map();
-
-
 
     void drawBackground();
 

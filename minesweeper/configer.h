@@ -1,6 +1,6 @@
 #pragma once
 
-// ×Ö·û¼¯ÎÊÌâ
+// å­—ç¬¦é›†é—®é¢˜
 #ifdef UNICODE
 #undef UNICODE
 #endif // UNICODE

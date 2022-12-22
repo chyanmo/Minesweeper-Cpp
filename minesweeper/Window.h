@@ -13,20 +13,19 @@ public:
     static void beginDraw();
     static void flushDraw();
     static void endDraw();
-
-    // °´¼ü²Ù×÷ºÍÊó±ê²Ù×÷
-    // ÅĞ¶ÏÓĞÃ»ÓĞÏûÏ¢
+    
+    // æŒ‰é”®æ“ä½œå’Œé¼ æ ‡æ“ä½œ
+    // åˆ¤æ–­æœ‰æ²¡æœ‰æ¶ˆæ¯
     inline static bool hasMsg() {
         return ::peekmessage(&m_msg, EX_MOUSE | EX_KEY);
-    }	// Ã»ÓĞ this Ö¸Õë£¬ĞèÒª m_msg Ò²ÊÇ static
+    }   // éœ€è¦ m_msg ä¸º static
+    
     inline static const ExMessage& getMsg() {
         return m_msg;
     }
 
 private:
-    HWND m_handle;		// ´°¿Ú¾ä±ú
-    // C++ 17
-    inline static ExMessage m_msg;	// ÏûÏ¢
+    HWND m_handle;  // çª—å£å¥æŸ„
+    // C++ 17 å¯ä½¿ç”¨å¦‚ä¸‹å®šä¹‰
+    inline static ExMessage m_msg;  // æ¶ˆæ¯
 };
-
-// C++ 17 Ö®Ç°ĞèÒªÔÚ cpp ÎÄ¼şÖĞÕâÑù¶¨ÒåÒ»ÏÂ²ÅĞĞ ExMessage Window::m_msg;

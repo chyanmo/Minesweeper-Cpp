@@ -6,7 +6,7 @@ Game::Game()
 {
     ::loadimage(&m_bk, "./images/bk.png", Window::width(), Window::height());
 
-    // °´Å¥³õÊ¼»¯
+    // æŒ‰é’®åˆå§‹åŒ–
     int ROW = 9, COL = 9;
     for (int i = 0; i < ROW; i++)
         for(int j = 0;j<COL;j++)
@@ -25,7 +25,7 @@ Game::Game()
 
 void Game::run()
 {
-    // »ñÈ¡°´Å¥µÄ·µ»ØÖµ
+    
     int op = -1;
     Window::beginDraw();
 
@@ -33,23 +33,23 @@ void Game::run()
     {
         Window::clear();
         drawBackground();
-
-        // »ñÈ¡¼üÅÌÏûÏ¢
+        
+        // é”®ç›˜æ¶ˆæ¯
         if (Window::hasMsg()) {
             m_msg = Window::getMsg();
             switch (m_msg.message)
             {
             case WM_KEYDOWN:
-                // °´ ESC ÍË³ö
+                // æŒ‰ ESC è¿”å›
                 if (m_msg.vkcode == VK_ESCAPE)
                     exit(0);
                 break;
-            default:    // Êó±ê²Ù×÷
+            default:
                 break;
             }
         }
 
-        // ¸ù¾İ°´Å¥µã»÷½øĞĞ²Ù×÷
+        // æµ‹è¯•ç”¨
         op = map();
         if (op >= 0)
             btns[op]->setText("a");
@@ -63,7 +63,7 @@ void Game::run()
 
 int Game::map()
 {
-    // ¸ù¾İ°´Å¥µÄµã»÷£¬·µ»Ø×ø±ê
+    // è¿”å›è¢«ç‚¹å‡»çš„æŒ‰é’®çš„åºå·
     int pos = -1;
 
     for (int i = 0; auto btn : btns) {

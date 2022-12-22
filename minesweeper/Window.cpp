@@ -2,7 +2,8 @@
 #include <iostream>
 Window::Window(int w, int h, int flag)
 {
-    // 创建窗口并获取句柄
+    
+    // 鑾峰彇绐楀彛鍙ユ焺
     m_handle = ::initgraph(w, h, flag);
     ::setbkmode(TRANSPARENT);
 }
