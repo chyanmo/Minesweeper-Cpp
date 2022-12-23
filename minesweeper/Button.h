@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "configer.h"
 #include "BasicWidget.h"
 
@@ -15,8 +15,8 @@ public:
     void setText(const std::string& = std::string());
 
 
-    bool isin();        // 判断鼠标在按钮上
-    bool isClicked();   // 判断是否点击
+    bool isin();    // 判断鼠标是否在按钮上
+    bool isClicked();   // 判断鼠标是否点击了按钮
 
     void eventLoop(const ExMessage&);
 

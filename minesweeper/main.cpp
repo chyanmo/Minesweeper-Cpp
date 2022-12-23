@@ -1,12 +1,21 @@
-#include "Game.h"
+﻿#include "Game.h"
 #include "Window.h"
 
 int main() {
-    Window w(330, 360, EX_SHOWCONSOLE);
+
+    const int ROW = 9, COL = 9, BOMB = 8;
+
+    const int ButtonSize = 30;
+
+    // 窗口大小和行列数有关，其中宽度设置了最小值 240
+    Window w( (ButtonSize * COL + 60 > 240) ? (ButtonSize * COL + 60) : 240,
+               ButtonSize * ROW + 100);
+
     w.setWindowTitle("Minesweeper");
-    Game g;
+
+    Game g(ROW, COL, ButtonSize, BOMB);
+
     g.run();
 
     return w.exec();
-
 }

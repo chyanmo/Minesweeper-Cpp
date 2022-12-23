@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // 字符集问题
 #ifdef UNICODE

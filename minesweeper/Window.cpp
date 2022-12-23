@@ -1,10 +1,12 @@
-#include "Window.h"
+﻿#include "Window.h"
 #include <iostream>
 Window::Window(int w, int h, int flag)
 {
-    
-    // 获取窗口句柄
-    m_handle = ::initgraph(w, h, flag);
+    // 创建窗口并获取句柄
+    if(flag)
+        m_handle = ::initgraph(w, h, flag);
+    else
+        m_handle = ::initgraph(w, h);
     ::setbkmode(TRANSPARENT);
 }
 
