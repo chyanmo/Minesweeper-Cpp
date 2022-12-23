@@ -5,6 +5,7 @@
 #undef UNICODE
 #endif // UNICODE
 
-
 #include <easyx.h>
 #include <string>
+
+#define DEBUG

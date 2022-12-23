@@ -2,22 +2,20 @@
 #include <iostream>
 #include <conio.h>
 
-Game::Game(const int ROW, const int COL, const int ButtonSize, const int Bomb)
+Game::Game(int ROW, int COL, int ButtonSize, int Mine)
+    : game_row(ROW), game_col(COL), button_size(ButtonSize), game_mine(Mine)
 {
     ::loadimage(&m_bk, "./images/bk.png", Window::width(), Window::height());
+    init_button();
 
-    // 按钮初始化
-    btns.resize(ROW * COL);
+#ifdef DEBUG
+    Map m(ROW, COL, Mine);
+#endif // DEBUG
+}
 
-    int xspace = (Window::width() - ButtonSize * COL) / 2;
-    int yspace = (Window::height() - ButtonSize * ROW) / 2;
-
-    for (int i = 0; auto& btn : btns) {
-        int bx = xspace + ButtonSize * (i % COL);
-        int by = yspace + ButtonSize * (i / COL);
-        btn = new Button(bx, by, ButtonSize, ButtonSize);
-        i++;
-    }
+Game::~Game()
+{
+    cleanup_button();
 }
 
 void Game::run()
@@ -80,4 +78,26 @@ void Game::show_button()
 void Game::draw_bkground()
 {
     ::putimage(0, 0, &m_bk);
+}
+
+void Game::init_button()
+{
+    btns.resize(game_row * game_col);
+
+    int xspace = (Window::width() - button_size * game_col) / 2;
+    int yspace = (Window::height() - button_size * game_row) / 2;
+
+    for (int i = 0; auto & btn : btns) {
+        int bx = xspace + button_size * (i % game_col);
+        int by = yspace + button_size * (i / game_col);
+        btn = new Button(bx, by, button_size, button_size);
+        i++;
+    }
+}
+
+void Game::cleanup_button()
+{
+    for (auto btn : btns)
+        delete btn;
+    btns.clear();
 }

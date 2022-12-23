@@ -25,8 +25,6 @@ public:
 
 private:
     HWND m_handle;		// 窗口句柄
-    // C++ 17
+    // 可定义如下 (Since C++17)
     inline static ExMessage m_msg;	// 消息
 };
-
-// C++ 17 之前需要在 cpp 文件中这样定义一下才行 ExMessage Window::m_msg;

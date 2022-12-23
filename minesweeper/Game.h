@@ -1,11 +1,14 @@
 ﻿#pragma once
 #include "Window.h"
-#include <vector>
 #include "Button.h"
+#include "Map.h"
+#include <vector>
+
 class Game
 {
 public:
-    Game(const int ROW = 9, const int COL = 9, const int ButtonSize = 30, const int Bomb = 8);
+    Game(int ROW = 9, int COL = 9, int ButtonSize = 30, int Mine = 8);
+    ~Game();
     // 启动
     void run();
 
@@ -17,6 +20,17 @@ public:
     void draw_bkground();
 
 private:
+
+    void init_button();
+    void cleanup_button();
+
+private:
+
+    int game_row;
+    int game_col;
+    int game_mine;
+    int button_size;
+
     IMAGE m_bk;
     ExMessage m_msg;
 
