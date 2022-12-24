@@ -22,7 +22,7 @@ public:
 private:
 
     void init_button();
-    void cleanup_button();
+    void clear_button();
 
 private:
 

@@ -15,7 +15,7 @@ Game::Game(int ROW, int COL, int ButtonSize, int Mine)
 
 Game::~Game()
 {
-    cleanup_button();
+    clear_button();
 }
 
 void Game::run()
@@ -95,7 +95,7 @@ void Game::init_button()
     }
 }
 
-void Game::cleanup_button()
+void Game::clear_button()
 {
     for (auto btn : btns)
         delete btn;
