@@ -10,13 +10,13 @@ public:
     void show() override;
 
 
-    void setBkClr(COLORREF);
-    void setHoverClr(COLORREF);
+    void setBackgroundColor(COLORREF);
+    void setHoverColor(COLORREF);
     void setText(const std::string& = std::string());
 
 
-    bool isin();    // 判断鼠标是否在按钮上
-    bool isClicked();   // 判断鼠标是否点击了按钮
+    bool isin();                // 鼠标在按钮上
+    unsigned short is_clicked();          // 左击返回 1，右击返回 2，没点击返回 0
 
     void eventLoop(const ExMessage&);
 

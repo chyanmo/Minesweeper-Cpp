@@ -23,12 +23,18 @@ bool Button::isin()
     return false;
 }
 
-bool Button::isClicked()
+unsigned short Button::is_clicked()
 {
-    if (isin())
-        if (m_msg.message == WM_LBUTTONDOWN)
-            return true;
-    return false;
+    if (isin()) {
+        switch (m_msg.message)
+        {
+        case WM_RBUTTONDOWN:
+            return 2;
+        case WM_LBUTTONDOWN:
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void Button::eventLoop(const ExMessage& msg)
@@ -39,12 +45,12 @@ void Button::eventLoop(const ExMessage& msg)
     else current_clr = hover_clr;
 }
 
-void Button::setBkClr(COLORREF c)
+void Button::setBackgroundColor(COLORREF c)
 {
     normal_clr = c;
 }
 
-void Button::setHoverClr(COLORREF c)
+void Button::setHoverColor(COLORREF c)
 {
     hover_clr = c;
 }
