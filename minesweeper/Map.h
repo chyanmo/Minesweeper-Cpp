@@ -17,12 +17,16 @@ public:
     void debug();
 #endif
 
+    void zero_extend(int r, int c);
+
 private:
     bool is_mine(int r, int c);
     bool is_in(int r, int c);
 
+
     template<typename Function>
     auto for_around(int r, int c, Function fn);
+
 
 private:
     int m_row;

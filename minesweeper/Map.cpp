@@ -13,6 +13,11 @@ Map::Map(int ROW, int COL, int Mine)
     resize(ROW,COL,Mine);
     pre_init();
 
+    // 测试
+    init(0, 0);
+    // 测试
+    zero_extend(0, 0);
+
 #ifdef DEBUG
     debug();
 #endif // DEBUG
@@ -41,7 +46,7 @@ void Map::pre_init()
     const int n = m_row * m_col;
     mine_map = new bool[n]();
     displayed_map = new int[n];
-    find_map = new bool[n];
+    find_map = new bool[n]();
     // 布雷
     std::for_each(mine_map + m_row * m_col - m_mine, mine_map + m_row * m_col, [](bool& x) {x = 1; });
 }
@@ -78,7 +83,6 @@ void Map::clear()
     mine_map = find_map = nullptr;
 }
 
-// 至少有 9 个空位
 void Map::resize(int ROW, int COL, int Mine)
 {
     m_row = ROW;
@@ -96,7 +100,23 @@ bool Map::is_in(int r, int c)
     return (r >= 0) && (c >= 0) && (r < m_row) && (c < m_col);
 }
 
+void Map::zero_extend(int r, int c)
+{
+    // 首先排除 不在地图内的 和 已经找过的
+    if (!is_in(r, c) || (find_map[r * m_col + c]))
+        return;
 
+    // 记下，防止重复找
+    find_map[r * m_col + c] = true;
+
+    // 不满足条件
+    if (displayed_map[r * m_col + c] != 0)
+        return;
+
+    for (int i = r - 1; i <= r + 1; i++)
+        for (int j = c - 1; j <= c + 1; j++)
+            zero_extend(i, j);
+}
 
 #ifdef DEBUG
 void Map::debug()
@@ -119,5 +139,11 @@ void Map::debug()
         std::cout << std::endl;
     }
 
+    std::cout << "Find map:" << std::endl;
+    for (int r = 0; r < m_row; r++) {
+        for (int c = 0; c < m_col; c++)
+            std::cout << find_map[r * m_col + c] << " ";
+        std::cout << std::endl;
+    }
 }
 #endif
