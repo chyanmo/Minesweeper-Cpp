@@ -13,7 +13,7 @@ public:
     void run();
 
     // 哪个按钮被按下
-    int get_click_pos();
+    unsigned short get_click_pos(unsigned int &coor);
 
     void show_button();
 

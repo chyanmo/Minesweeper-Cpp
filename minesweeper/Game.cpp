@@ -20,7 +20,9 @@ Game::~Game()
 
 void Game::run()
 {
-    int op = -1;
+    unsigned coor = -1;
+    unsigned short bt = 0;
+
     Window::beginDraw();
 
     while (true)
@@ -39,15 +41,18 @@ void Game::run()
                 if (m_msg.vkcode == VK_ESCAPE)
                     exit(0);
                 break;
-            default:    // 鼠标操作
-                op = get_click_pos();
+            default:            // 鼠标操作
+                bt = get_click_pos(coor);
                 break;
             }
         }
 
         // 根据返回的坐标进行操作
-        if (op >= 0)
-            btns[op]->setText("a");
+        if (bt == 1)
+            btns[coor]->setText("L");
+        else if (bt == 2)
+            btns[coor]->setText("R");
+
 
 
         Window::flushDraw();
@@ -55,18 +60,21 @@ void Game::run()
     Window::endDraw();
 }
 
-int Game::get_click_pos()
+unsigned short Game::get_click_pos(unsigned int& coor)
 {
-    // 根据按钮的点击，返回坐标
-    for (int i = 0; auto btn : btns) {
-        // 获取消息
-        btn->eventLoop(m_msg);
+    unsigned int key;
+    for (int i = 0; i < btns.size(); i++) {
+
+        btns[i]->eventLoop(m_msg);  // 传递消息
         
-        if (btn->isClicked())
-            return i;
-        i++;
+        key = btns[i]->is_clicked();
+        if (key) {
+            coor = i;
+            return key;
+        }
     }
-    return -1;
+    coor = -1;
+    return 0;
 }
 
 void Game::show_button()

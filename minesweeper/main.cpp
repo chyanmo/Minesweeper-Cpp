@@ -3,7 +3,7 @@
 
 int main() {
 
-    const int ROW = 9, COL = 9, MINE = 72;
+    const int ROW = 9, COL = 9, MINE = 11;
 
     const int ButtonSize = 30;
 
