@@ -12,15 +12,6 @@ Map::Map(int ROW, int COL, int Mine)
 {
     resize(ROW,COL,Mine);
     pre_init();
-
-    // 测试
-    init(0, 0);
-    // 测试
-    zero_extend(0, 0);
-
-#ifdef DEBUG
-    debug();
-#endif // DEBUG
 }
 
 Map::~Map()
@@ -45,10 +36,11 @@ void Map::pre_init()
     // 分配空间
     const int n = m_row * m_col;
     mine_map = new bool[n]();
-    displayed_map = new int[n];
+    display_map = new int[n];
     find_map = new bool[n]();
+    mark_map = new bool[n]();
     // 布雷
-    std::for_each(mine_map + m_row * m_col - m_mine, mine_map + m_row * m_col, [](bool& x) {x = 1; });
+    std::for_each(mine_map + n - m_mine, mine_map + n, [](bool& x) {x = 1; });
 }
 
 void Map::init(int click_r, int click_c)
@@ -70,17 +62,30 @@ void Map::init(int click_r, int click_c)
     // 生成 displayed_map
     for (int i = 0; i < m_row; i++)
         for (int j = 0; j < m_col; j++)
-            displayed_map[i * m_col + j] = for_around(i, j,
+            display_map[i * m_col + j] = for_around(i, j,
                 [this, count = 0](int r, int c)mutable {count += is_mine(r, c); return (int)count; });
+
+#ifdef DEBUG
+    debug();
+#endif // DEBUG
 }
 
 void Map::clear()
 {
     delete[] mine_map;
-    delete[] displayed_map;
+    delete[] display_map;
     delete[] find_map;
-    displayed_map = nullptr;
-    mine_map = find_map = nullptr;
+    delete[] mark_map;
+    display_map = nullptr;
+    mark_map = mine_map = find_map = nullptr;
+}
+
+unsigned short Map::stat(unsigned i)
+{
+    if (mark_map[i])return 10;
+    if (!(find_map[i]))return 11;
+    if (mine_map[i])return 9;
+    return display_map[i];
 }
 
 void Map::resize(int ROW, int COL, int Mine)
@@ -90,27 +95,73 @@ void Map::resize(int ROW, int COL, int Mine)
     m_mine = (Mine < ROW * COL) ? (Mine) : (ROW * COL);
 }
 
-bool Map::is_mine(int r, int c)
-{
-    return (is_in(r, c)) && (mine_map[r * m_col + c]);
-}
-
 bool Map::is_in(int r, int c)
 {
     return (r >= 0) && (c >= 0) && (r < m_row) && (c < m_col);
 }
 
+bool Map::is_mine(int r, int c)
+{
+    return (is_in(r, c)) && (mine_map[r * m_col + c]);
+}
+
+bool Map::is_marked(int r, int c)
+{
+    return (is_in(r, c)) && (mark_map[r * m_col + c]);
+}
+
+void Map::right_click(int r, int c)
+{
+    // 作用于点开的格子
+    if (find_map[r * m_col + c])
+        try_open_around(r, c);
+    // 作用于没点开的格子，标记或取消标记
+    else
+        mark_map[r * m_col + c] = !(mark_map[r * m_col + c]);
+}
+
+void Map::left_click(int r, int c)
+{
+    // 被标记的，取消标记
+    if (mark_map[r * m_col + c])
+        mark_map[r * m_col + c] = false;
+
+    // 已经点开的，尝试点开周围
+    else if (find_map[r * m_col + c])
+        try_open_around(r, c);
+
+    else if (display_map[r * m_col + c] == 0)
+        zero_extend(r, c);
+
+    else find_map[r * m_col + c] = true;
+}
+
+void Map::try_open_around(int r, int c) {
+
+    // 统计周围有标记的格子数
+    int mark_count = for_around(r, c, [this, count = 0](int r, int c)mutable {count += is_marked(r, c); return (int)count; });
+
+    // 假设标记的格子数不少于显示的数字，点开其他格子
+    if (mark_count >= display_map[r * m_col + c])
+    {
+        for (int i = r - 1; i <= r + 1; i++)
+            for (int j = c - 1; j <= c + 1; j++)
+                if (is_in(i, j) && !(find_map[i * m_col + j]) && !(mark_map[i * m_col + j]))
+                    left_click(i, j);
+    }
+}
+
 void Map::zero_extend(int r, int c)
 {
-    // 首先排除 不在地图内的 和 已经找过的
-    if (!is_in(r, c) || (find_map[r * m_col + c]))
+    // 首先排除：不在地图内的 / 已经找过的 / 做标记的
+    if (!is_in(r, c) || (find_map[r * m_col + c]) || (mark_map[r * m_col + c]))
         return;
 
     // 记下，防止重复找
     find_map[r * m_col + c] = true;
 
     // 不满足条件
-    if (displayed_map[r * m_col + c] != 0)
+    if (display_map[r * m_col + c] != 0)
         return;
 
     for (int i = r - 1; i <= r + 1; i++)
@@ -128,22 +179,23 @@ void Map::debug()
         std::cout << std::endl;
     }
 
-    std::cout << "Displayed map:" << std::endl;
+    std::cout << "Display map:" << std::endl;
     for (int r = 0; r < m_row; r++) {
         for (int c = 0; c < m_col; c++){
             if (mine_map[r * m_col + c])
                 std::cout << "x ";
             else
-                std::cout << displayed_map[r * m_col + c] << " ";
+                std::cout << display_map[r * m_col + c] << " ";
         }
         std::cout << std::endl;
     }
-
+    /*
     std::cout << "Find map:" << std::endl;
     for (int r = 0; r < m_row; r++) {
         for (int c = 0; c < m_col; c++)
             std::cout << find_map[r * m_col + c] << " ";
         std::cout << std::endl;
     }
+    */
 }
 #endif
