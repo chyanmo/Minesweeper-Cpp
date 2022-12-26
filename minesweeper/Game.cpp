@@ -7,10 +7,6 @@ Game::Game(int ROW, int COL, int ButtonSize, int Mine)
 {
     ::loadimage(&m_bk, "./images/bk.png", Window::width(), Window::height());
     init_button();
-
-#ifdef DEBUG
-    Map m(ROW, COL, Mine);
-#endif // DEBUG
 }
 
 Game::~Game()
@@ -20,9 +16,9 @@ Game::~Game()
 
 void Game::run()
 {
-    unsigned coor = -1;
-    unsigned short bt = 0;
+    map = new Map(game_row, game_col, game_mine);
 
+    
     Window::beginDraw();
 
     while (true)
@@ -31,6 +27,11 @@ void Game::run()
 
         draw_bkground();
         show_button();
+
+
+        // 用于记录鼠标 左击/右击
+        unsigned short bt = 0;
+        unsigned coor = -1;
 
         // 获取消息
         if (Window::hasMsg()) {
@@ -47,18 +48,52 @@ void Game::run()
             }
         }
 
-        // 根据返回的坐标进行操作
-        if (bt == 1)
-            btns[coor]->setText("L");
-        else if (bt == 2)
-            btns[coor]->setText("R");
+        
+        if (bt != 0) 
+        {
+            unsigned r = coor / game_col;
+            unsigned c = coor % game_col;
+            
+            if (bt == 1) {
+                std::cout << "L";
+                if (!start) {
+                    map->init(r, c);
+                    start = true;
+                }
+                map->left_click(r, c);
+            }
+            else if (bt == 2) {
+                std::cout << "R";
+                map->right_click(r, c);
+            }
 
 
+            for (int i = 0; i < btns.size(); i++) {
+
+                unsigned short st = map->stat(i);
+
+                if (st == 0)
+                    btns[i]->setBkClr(RGB(232, 232, 236));
+                else if (st == 9)
+                    btns[i]->setText("X");
+                else if (st == 10)
+                    btns[i]->setText("M");
+                else if (st == 11)
+                    btns[i]->setText();
+                else {
+                    btns[i]->setBkClr(RGB(232, 232, 236));
+                    btns[i]->setText(std::to_string(st));
+                }
+            }
+
+
+        }
 
         Window::flushDraw();
     }
     Window::endDraw();
 }
+
 
 unsigned short Game::get_click_pos(unsigned int& coor)
 {
@@ -76,6 +111,7 @@ unsigned short Game::get_click_pos(unsigned int& coor)
     coor = -1;
     return 0;
 }
+
 
 void Game::show_button()
 {

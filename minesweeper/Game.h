@@ -12,19 +12,21 @@ public:
     // 启动
     void run();
 
+private:
+    
     // 哪个按钮被按下
     unsigned short get_click_pos(unsigned int &coor);
-
-    void show_button();
-
-    void draw_bkground();
 
 private:
 
     void init_button();
     void clear_button();
+    void show_button();
+    void draw_bkground();
 
 private:
+
+    bool start = false;
 
     int game_row;
     int game_col;
@@ -34,6 +36,7 @@ private:
     IMAGE m_bk;
     ExMessage m_msg;
 
+    Map* map;
     std::vector<Button*> btns;
 };
 
