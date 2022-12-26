@@ -8,7 +8,7 @@ void Button::show()
     setfillcolor(current_clr);
     ::fillroundrect(m_x, m_y, m_x + m_w, m_y + m_h, 10, 10);
 
-    settextcolor(BLACK);
+    settextcolor(text_clr);
     // 文字居中
     int tx = m_x + (m_w - textwidth(m_text.c_str())) / 2,
         ty = m_y + (m_h - textheight(m_text.c_str())) / 2;
@@ -45,12 +45,12 @@ void Button::eventLoop(const ExMessage& msg)
     else current_clr = hover_clr;
 }
 
-void Button::setBackgroundColor(COLORREF c)
+void Button::setBkClr(COLORREF c)
 {
     normal_clr = c;
 }
 
-void Button::setHoverColor(COLORREF c)
+void Button::setHoverClr(COLORREF c)
 {
     hover_clr = c;
 }
@@ -58,4 +58,9 @@ void Button::setHoverColor(COLORREF c)
 void Button::setText(const std::string& text)
 {
     m_text = text;
+}
+
+void Button::setTextClr(COLORREF c)
+{
+    text_clr = c;
 }
