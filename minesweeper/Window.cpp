@@ -10,6 +10,11 @@ Window::Window(int w, int h, int flag)
     ::setbkmode(TRANSPARENT);
 }
 
+Window::~Window()
+{
+    ::closegraph();
+}
+
 void Window::setWindowTitle(const std::string& title)
 {
     ::SetWindowText(m_handle, title.c_str());
