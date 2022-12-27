@@ -17,12 +17,15 @@ private:
     // 哪个按钮被按下
     unsigned short get_click_pos(unsigned int &coor);
 
+
 private:
 
+
     void init_button();
-    void clear_button();
     void show_button();
-    void draw_bkground();
+    void clear_button();
+    
+
 
 private:
 
@@ -36,7 +39,10 @@ private:
     IMAGE m_bk;
     ExMessage m_msg;
 
-    Map* map;
+    Map* map = nullptr;
+
+    std::vector<Label*> labels;
+    std::vector<Button*> menus;
     std::vector<Button*> btns;
 };
 
