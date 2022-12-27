@@ -133,6 +133,7 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="configer.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Label.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
@@ -140,6 +141,7 @@
     <ClCompile Include="BasicWidget.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Label.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Window.cpp" />
