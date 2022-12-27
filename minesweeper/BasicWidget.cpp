@@ -19,11 +19,11 @@ int BasicWidget::height() {
 }
 
 
-void BasicWidget::resize(int w, int h) {
-    this->m_w = w;
-    this->m_h = h;
-}
 void BasicWidget::move(int x, int y) {
-    this->m_x = x;
-    this->m_y = y;
+    m_x = x;
+    m_y = y;
+}
+void BasicWidget::resize(int w, int h) {
+    m_w = w;
+    m_h = h;
 }
