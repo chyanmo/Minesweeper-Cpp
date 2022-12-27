@@ -9,7 +9,7 @@ int main() {
 
     // 窗口大小和行列数有关，其中宽度设置了最小值 240
     Window w( (ButtonSize * COL + 60 > 240) ? (ButtonSize * COL + 60) : 240,
-               ButtonSize * ROW + 100,
+               ButtonSize * (ROW + 2) + 100,
                EX_SHOWCONSOLE);
 
     w.setWindowTitle("Minesweeper");
