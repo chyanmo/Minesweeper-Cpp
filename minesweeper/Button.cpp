@@ -1,7 +1,7 @@
 ﻿#include "Button.h"
 
 Button::Button(int x, int y, int w, int h)
-    :Label(x,y,w,h) {}
+    :Label(x,y,w,h,RGB(217, 217, 243)) {}
 
 bool Button::isin()
 {
@@ -24,8 +24,6 @@ unsigned short Button::is_clicked()
     }
     return 0;
 }
-
-
 
 void Button::eventLoop(const ExMessage& msg)
 {
