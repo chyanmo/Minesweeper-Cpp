@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "configer.h"
+#include <utility>
+#include <queue>
 
 class Map
 {
@@ -11,7 +13,10 @@ public:
     void right_click(int r, int c);
     void init(int r, int c);    // 将 mine_map 打乱，生成 display_map
 
-    unsigned short stat(unsigned i);
+    bool empty_buffer();
+    std::pair<short,unsigned> front_buffer();
+    void pop_buffer();
+
 
 private:
 
@@ -28,7 +33,6 @@ private:
     template<typename Function>
     auto for_around(int r, int c, Function fn);
 
-    void zero_extend(int r, int c);
     void try_open_around(int r, int c);
 
 #ifdef DEBUG
@@ -38,6 +42,8 @@ private:
     int m_row;
     int m_col;
     int m_mine;
+
+    std::queue<std::pair<short, unsigned>> buffer;
 
     bool* mine_map;
     int* display_map;

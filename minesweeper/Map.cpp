@@ -70,6 +70,21 @@ void Map::init(int click_r, int click_c)
 #endif // DEBUG
 }
 
+bool Map::empty_buffer()
+{
+    return buffer.empty();
+}
+
+std::pair<short, unsigned> Map::front_buffer()
+{
+    return buffer.front();
+}
+
+void Map::pop_buffer()
+{
+    buffer.pop();
+}
+
 void Map::clear()
 {
     delete[] mine_map;
@@ -78,14 +93,6 @@ void Map::clear()
     delete[] mark_map;
     display_map = nullptr;
     mark_map = mine_map = find_map = nullptr;
-}
-
-unsigned short Map::stat(unsigned i)
-{
-    if (mark_map[i])return 10;
-    if (!(find_map[i]))return 11;
-    if (mine_map[i])return 9;
-    return display_map[i];
 }
 
 void Map::resize(int ROW, int COL, int Mine)
@@ -112,28 +119,49 @@ bool Map::is_marked(int r, int c)
 
 void Map::right_click(int r, int c)
 {
+    unsigned i = r * m_col + c;
     // 作用于点开的格子
-    if (find_map[r * m_col + c])
+    if (find_map[i])
         try_open_around(r, c);
     // 作用于没点开的格子，标记或取消标记
-    else
-        mark_map[r * m_col + c] = !(mark_map[r * m_col + c]);
+    else if (mark_map[i]) {
+        mark_map[i] = false;
+        buffer.push(std::make_pair((short)(-2), i));
+    }
+    else if (!(mark_map[i])) {
+        mark_map[i] = true;
+        buffer.push(std::make_pair((short)(-1), i));
+    }
 }
 
 void Map::left_click(int r, int c)
 {
+    unsigned i = r * m_col + c;
     // 被标记的，取消标记
-    if (mark_map[r * m_col + c])
-        mark_map[r * m_col + c] = false;
+    if (mark_map[i]) {
+        mark_map[i] = false;
+        buffer.push(std::make_pair((short)(-2), i));
+    }
 
     // 已经点开的，尝试点开周围
-    else if (find_map[r * m_col + c])
+    else if (find_map[i])
         try_open_around(r, c);
 
-    else if (display_map[r * m_col + c] == 0)
-        zero_extend(r, c);
+    // 0-扩展
+    else if (display_map[i] == 0) {
+        find_map[i] = true;
+        buffer.push(std::make_pair((short)0, i));
+        try_open_around(r, c);
+    }
 
-    else find_map[r * m_col + c] = true;
+    // 普通格子，点开它
+    else { 
+        find_map[i] = true; 
+        if (mine_map[i])
+            buffer.push(std::make_pair((short)9, i));
+        else
+            buffer.push(std::make_pair((short)(display_map[i]), i));
+    }
 }
 
 void Map::try_open_around(int r, int c) {
@@ -142,7 +170,7 @@ void Map::try_open_around(int r, int c) {
     int mark_count = for_around(r, c, [this, count = 0](int r, int c)mutable {count += is_marked(r, c); return (int)count; });
 
     // 假设标记的格子数不少于显示的数字，点开其他格子
-    if (mark_count >= display_map[r * m_col + c])
+    if (mark_count >= display_map[r * m_col + c]) 
     {
         for (int i = r - 1; i <= r + 1; i++)
             for (int j = c - 1; j <= c + 1; j++)
@@ -151,28 +179,11 @@ void Map::try_open_around(int r, int c) {
     }
 }
 
-void Map::zero_extend(int r, int c)
-{
-    // 首先排除：不在地图内的 / 已经找过的 / 做标记的
-    if (!is_in(r, c) || (find_map[r * m_col + c]) || (mark_map[r * m_col + c]))
-        return;
-
-    // 记下，防止重复找
-    find_map[r * m_col + c] = true;
-
-    // 不满足条件
-    if (display_map[r * m_col + c] != 0)
-        return;
-
-    for (int i = r - 1; i <= r + 1; i++)
-        for (int j = c - 1; j <= c + 1; j++)
-            zero_extend(i, j);
-}
 
 #ifdef DEBUG
 void Map::debug()
 {
-    std::cout << "Mine map:" << std::endl;
+    std::cout << std::endl << "Mine map:" << std::endl;
     for (int r = 0; r < m_row; r++) {
         for (int c = 0; c < m_col; c++)
             std::cout << mine_map[r * m_col + c] << " ";
@@ -189,13 +200,5 @@ void Map::debug()
         }
         std::cout << std::endl;
     }
-    /*
-    std::cout << "Find map:" << std::endl;
-    for (int r = 0; r < m_row; r++) {
-        for (int c = 0; c < m_col; c++)
-            std::cout << find_map[r * m_col + c] << " ";
-        std::cout << std::endl;
-    }
-    */
 }
 #endif
