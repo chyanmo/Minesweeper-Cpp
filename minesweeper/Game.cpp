@@ -1,6 +1,11 @@
 ﻿#include "Game.h"
+#include <thread>
+#include <chrono>
+
+#ifdef DEBUG
 #include <iostream>
-#include <conio.h>
+#endif // DEBUG
+
 
 Game::Game(int ROW, int COL, int ButtonSize, int Mine)
     : game_row(ROW), game_col(COL), button_size(ButtonSize), game_mine(Mine) {}
@@ -8,6 +13,15 @@ Game::Game(int ROW, int COL, int ButtonSize, int Mine)
 Game::~Game()
 {
     clear_button();
+    if (window) {
+        Window::endDraw;
+        delete window;
+        window = nullptr;
+    }
+    if (map) {
+        delete map;
+        map = nullptr;
+    }
 }
 
 void Game::run()
@@ -16,19 +30,16 @@ void Game::run()
 
     // init 中已经包含 Window::beginDraw();
 
+
     while (true)
     {
         Window::clear();
 
         show_button();
 
-        // 用于记录鼠标 左击/右击
-        unsigned short bt = 0;
-        unsigned coor = -1;
-
-        // 获取消息
         if (Window::hasMsg()) {
-            m_msg = Window::getMsg();
+            m_msg = Window::getMsg();   // 获取消息
+
             switch (m_msg.message)
             {
             case WM_KEYDOWN:    // 键盘操作
@@ -42,55 +53,50 @@ void Game::run()
                     init(16, 30, 99);
                 break;
             default:            // 鼠标操作
-                bt = get_click_pos(coor);
+                if (click_forward())
+                    update_button();
 
-                if (bt != 0)
-                {
-                    unsigned r = coor / game_col;
-                    unsigned c = coor % game_col;
-
-                    if (bt == 1) {
-                        std::cout << "L";
-                        if (!started) {
-                            map->init(r, c);
-                            started = true;
-                        }
-                        map->left_click(r, c);
-                    }
-                    else if (bt == 2) {
-                        std::cout << "R";
-                        map->right_click(r, c);
-                    }
-
-                    test();
-
-                }
                 break;
             }
         }
+        else
+            std::this_thread::sleep_for(std::chrono::milliseconds(4));
 
-        
+
         Window::flushDraw();
     }
     Window::endDraw();
 }
 
 
-unsigned short Game::get_click_pos(unsigned int& coor)
+bool Game::click_forward()
 {
-    unsigned int key;
-    for (int i = 0; i < btns.size(); i++) {
+    unsigned int i = 0;
+    unsigned short key = 0;
 
-        btns[i]->eventLoop(m_msg);  // 传递消息
-        
+    for (; i < btns.size(); i++) {
+
+        btns[i]->getmsg2(m_msg);  // 传递消息
+
         key = btns[i]->is_clicked();
-        if (key) {
-            coor = i;
-            return key;
+
+        if (key == 1) {
+            // std::cout << "L";
+            if (!started) {
+                map->init(i / game_col, i % game_col);
+                started = true;
+            }
+            map->left_click(i / game_col, i % game_col);
+            return true;
         }
+        else if (key == 2 && started) {
+            // std::cout << "R";
+            map->right_click(i / game_col, i % game_col);
+            return true;
+        }
+
     }
-    coor = -1;
-    return 0;
+    return false;
 }
 
 void Game::init(int ROW, int COL, int Mine)
@@ -110,7 +116,7 @@ void Game::init(int ROW, int COL, int Mine)
             window = nullptr;
         }
 
-        window = new Window(button_size * (COL + 7) + 60 , button_size * (ROW + 2) + 100, EX_SHOWCONSOLE);
+        window = new Window(button_size * max(COL, 6) + 60 , button_size * (ROW + 2) + 60, EX_SHOWCONSOLE);
 
         window->setWindowTitle("Minesweeper");
 
@@ -133,24 +139,35 @@ void Game::init(int ROW, int COL, int Mine)
     inited = true;
 }
 
-void Game::test()
+void Game::update_button()
 {
-    for (int i = 0; i < btns.size(); i++) {
+    while (!(map->empty_buffer())) {
+        auto opt = map->front_buffer();
 
-        unsigned short st = map->stat(i);
-
-        if (st == 0)
-            btns[i]->setBkClr(RGB(244, 240, 230));
-        else if (st == 9)
-            btns[i]->setText("X");
-        else if (st == 10)
-            btns[i]->setText("M");
-        else if (st == 11)
-            btns[i]->setText();
-        else {
-            btns[i]->setBkClr(RGB(244, 240, 230));
-            btns[i]->setText(std::to_string(st));
+        switch (opt.first)
+        {
+        case -2:
+            btns[opt.second]->setText();
+            break;
+        case -1:
+            btns[opt.second]->setText("M");
+            break;
+        case 0:
+            btns[opt.second]->setBkClr(RGB(244, 240, 230));
+            break;
+        case 9:
+            btns[opt.second]->setText("X");
+            btns[opt.second]->setBkClr(RED);
+            break;
+        default:
+            btns[opt.second]->setBkClr(RGB(244, 240, 230));
+            btns[opt.second]->setText(std::to_string(opt.first));
+            btns[opt.second]->setTextClr(COLOR[opt.first]);
+            break;
         }
+
+
+        map->pop_buffer();
     }
 }
 
@@ -158,14 +175,25 @@ void Game::show_button()
 {
     for (auto btn : btns)
         btn->show();
+    for (auto menu : menus)
+        menu->show();
+    for (auto lab : labels)
+        lab->show();
 }
 
 void Game::init_button()
 {
-    int xspace = (Window::width() - button_size * max(game_col, 7)) / 2;
+    int xspace = (Window::width() - button_size * max(game_col, 6)) / 2;
     int yspace = (Window::height() - button_size * (game_row + 2)) / 2;
-    // labels.push_back(new Label(xspace, yspace, 2 * button_size, button_size, BLACK, std::to_string(game_mine), RED));
-    // labels.push_back(new Label(xspace, yspace, 2 * button_size, button_size, BLACK, std::to_string(game_mine), RED));
+
+    labels.push_back(new Label(xspace, yspace, 1.5 * button_size, 1.1 * button_size, WHITE, std::to_string(game_mine), RED));
+    labels.push_back(new Label(Window::width() - xspace - 1.5 * button_size, yspace, 1.5 * button_size, 1.1 * button_size, WHITE, "0", RED));
+
+    xspace = (Window::width() - 1.1 * button_size) / 2;
+    menus.push_back(new Button(xspace, yspace, 1.1 * button_size, 1.1 * button_size));
+
+    xspace = (Window::width() - button_size * game_col) / 2;
+    yspace += 2 * button_size;
 
     btns.resize(game_row * game_col);
     for (int i = 0; auto & btn : btns) {
@@ -180,5 +208,16 @@ void Game::clear_button()
 {
     for (auto btn : btns)
         delete btn;
+    
     btns.clear();
+    
+    for (auto menu : menus)
+        delete menu;
+
+    menus.clear();
+
+    for (auto lab : labels)
+        delete lab;
+
+    labels.clear();
 }
