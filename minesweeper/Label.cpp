@@ -1,8 +1,5 @@
 ﻿#include "Label.h"
 
-// Label::Label(int x, int y, int w, int h)
-//    :BasicWidget(x, y, w, h) {}
-    
 Label::Label(int x, int y, int w, int h, const std::string& text, COLORREF textcolor, COLORREF backgroundcolor)
     :BasicWidget(x, y, w, h), m_text(text), text_clr(textcolor), bk_clr(backgroundcolor) {}
 
@@ -12,7 +9,7 @@ Label::Label(int x, int y, int w, int h, COLORREF backgroundcolor, const std::st
 void Label::show()
 {
     setfillcolor(bk_clr);
-    ::fillroundrect(m_x, m_y, m_x + m_w, m_y + m_h, 10, 10);
+    ::fillroundrect(m_x, m_y, m_x + m_w, m_y + m_h, 5, 5);
 
     settextcolor(text_clr);
     // 文字居中
