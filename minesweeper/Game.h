@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Window.h"
 #include "Button.h"
+#include "EmojiButton.h"
 #include "Map.h"
 #include <vector>
 
@@ -44,6 +45,7 @@ private:
 
     bool started = false;
     bool inited = false;
+    bool finished = false;
 
     int game_row;
     int game_col;
@@ -56,7 +58,7 @@ private:
     Map* map = nullptr;
 
     std::vector<Label*> labels;
-    std::vector<Button*> menus;
+    EmojiButton* Emoji = nullptr;
     std::vector<Button*> btns;
 };
 

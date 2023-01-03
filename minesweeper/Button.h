@@ -11,24 +11,15 @@ public:
     void setHoverClr(COLORREF);         // 设置被鼠标扫过时的颜色
     void setBkClr(COLORREF);            // 设置没有被鼠标扫过时的颜色
 
-    void getmsg2(const ExMessage&);   // 用于接收消息
+    void getmsgx(const ExMessage&);   // 用于接收消息
     void getmsg(const ExMessage&);
 
     bool isin();                        // 判断鼠标在按钮上
     unsigned short is_clicked();        // 判断点击，左击返回 1，右击返回 2，没点击返回 0
 
+    bool active = true;
     
-    /*
-     * 在父类中实现：
-     * 
-     * void show();                                         // 显示
-     * void setText(const std::string & = std::string());   // 设置文本
-     * void setTextClr(COLORREF);                           // 设置文本颜色
-     */
-
-
 private:
-    std::string m_text = std::string();
     ExMessage m_msg;
 
     COLORREF normal_clr = RGB(217, 217, 243);

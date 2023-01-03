@@ -9,17 +9,32 @@
 #endif // DEBUG
 
 Map::Map(int ROW, int COL, int Mine)
+    :m_row(ROW), m_col(COL)
 {
-    resize(ROW,COL,Mine);
-    pre_init();
+    const int n = ROW * COL;
+    m_mark = m_mine = Mine < n ? Mine : n;
+    m_remain = n - m_mine;
+
+    // 分配空间
+    mine_map = new bool[n]();
+    display_map = new int[n];
+    find_map = new bool[n]();
+    mark_map = new bool[n]();
+    // 布雷
+    for (int i = n - m_mine; i < n; i++)
+        mine_map[i] = 1;
 }
 
 Map::~Map()
 {
-    clear();
+    delete[] mine_map;
+    delete[] display_map;
+    delete[] find_map;
+    delete[] mark_map;
+    display_map = nullptr;
+    mark_map = mine_map = find_map = nullptr;
 }
 
-// r, c 是坐标，对 (r,c) 周围的一圈，包括它本身执行 fn(x,y)，返回值是 fn(r+1, c+1) 的返回值 
 template<typename Function>
 auto Map::for_around(int r, int c, Function fn)
 {
@@ -31,24 +46,13 @@ auto Map::for_around(int r, int c, Function fn)
     return fn(r + 1, c + 1);
 }
 
-void Map::pre_init()
-{
-    // 分配空间
-    const int n = m_row * m_col;
-    mine_map = new bool[n]();
-    display_map = new int[n];
-    find_map = new bool[n]();
-    mark_map = new bool[n]();
-    // 布雷
-    std::for_each(mine_map + n - m_mine, mine_map + n, [](bool& x) {x = 1; });
-}
-
 void Map::init(int click_r, int click_c)
 {
     int total = for_around(click_r, click_c,
         [this, count = 0](int r, int c)mutable {count += is_in(r, c); return (int)count; }
     );
-    if (m_row * m_col < m_mine + total) total = 0;
+    if (m_row * m_col < m_mine + total)
+        total = 0;
 
     // 将 mine_map 打乱
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -60,14 +64,19 @@ void Map::init(int click_r, int click_c)
     );
 
     // 生成 displayed_map
-    for (int i = 0; i < m_row; i++)
-        for (int j = 0; j < m_col; j++)
+    for (unsigned i = 0; i < m_row; i++)
+        for (unsigned j = 0; j < m_col; j++)
             display_map[i * m_col + j] = for_around(i, j,
                 [this, count = 0](int r, int c)mutable {count += is_mine(r, c); return (int)count; });
 
 #ifdef DEBUG
     debug();
 #endif // DEBUG
+}
+
+bool Map::win()
+{
+    return !(bool)m_remain;
 }
 
 bool Map::empty_buffer()
@@ -85,21 +94,9 @@ void Map::pop_buffer()
     buffer.pop();
 }
 
-void Map::clear()
+unsigned Map::getmark()
 {
-    delete[] mine_map;
-    delete[] display_map;
-    delete[] find_map;
-    delete[] mark_map;
-    display_map = nullptr;
-    mark_map = mine_map = find_map = nullptr;
-}
-
-void Map::resize(int ROW, int COL, int Mine)
-{
-    m_row = ROW;
-    m_col = COL;
-    m_mine = (Mine < ROW * COL) ? (Mine) : (ROW * COL);
+    return m_mark;
 }
 
 bool Map::is_in(int r, int c)
@@ -126,11 +123,13 @@ void Map::right_click(int r, int c)
     // 作用于没点开的格子，标记或取消标记
     else if (mark_map[i]) {
         mark_map[i] = false;
-        buffer.push(std::make_pair((short)(-2), i));
+        m_mark++;
+        buffer.push(std::make_pair((short)UNMARK, i));
     }
-    else if (!(mark_map[i])) {
+    else if (!(mark_map[i]) && m_mark) {
         mark_map[i] = true;
-        buffer.push(std::make_pair((short)(-1), i));
+        m_mark--;
+        buffer.push(std::make_pair((short)DOMARK, i));
     }
 }
 
@@ -140,7 +139,7 @@ void Map::left_click(int r, int c)
     // 被标记的，取消标记
     if (mark_map[i]) {
         mark_map[i] = false;
-        buffer.push(std::make_pair((short)(-2), i));
+        buffer.push(std::make_pair((short)UNMARK, i));
     }
 
     // 已经点开的，尝试点开周围
@@ -150,7 +149,8 @@ void Map::left_click(int r, int c)
     // 0-扩展
     else if (display_map[i] == 0) {
         find_map[i] = true;
-        buffer.push(std::make_pair((short)0, i));
+        m_remain--;
+        buffer.push(std::make_pair((short)BLANK, i));
         try_open_around(r, c);
     }
 
@@ -158,9 +158,11 @@ void Map::left_click(int r, int c)
     else { 
         find_map[i] = true; 
         if (mine_map[i])
-            buffer.push(std::make_pair((short)9, i));
-        else
+            buffer.push(std::make_pair((short)ONAMINE, i));
+        else {
+            m_remain--;
             buffer.push(std::make_pair((short)(display_map[i]), i));
+        }
     }
 }
 

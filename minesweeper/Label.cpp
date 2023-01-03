@@ -11,10 +11,12 @@ void Label::show()
     setfillcolor(bk_clr);
     ::fillroundrect(m_x, m_y, m_x + m_w, m_y + m_h, 5, 5);
 
-    settextcolor(text_clr);
     // 文字居中
     int tx = m_x + (m_w - textwidth(m_text.c_str())) / 2,
         ty = m_y + (m_h - textheight(m_text.c_str())) / 2;
+
+    settextcolor(text_clr);
+
     ::outtextxy(tx, ty, m_text.c_str());
 }
 

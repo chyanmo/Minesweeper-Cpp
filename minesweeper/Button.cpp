@@ -25,7 +25,7 @@ unsigned short Button::is_clicked()
     return 0;
 }
 
-void Button::getmsg(const ExMessage& msg)
+void Button::getmsgx(const ExMessage& msg)
 {
     m_msg = msg;
     if (!isin())
@@ -33,7 +33,7 @@ void Button::getmsg(const ExMessage& msg)
     else bk_clr = hover_clr;
 }
 
-void Button::getmsg2(const ExMessage& msg)
+void Button::getmsg(const ExMessage& msg)
 {
     m_msg = msg;
 }
