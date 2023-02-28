@@ -7,7 +7,7 @@ int main() {
 
     const int ButtonSize = 30;
 
-    Game g(ROW, COL, ButtonSize, MINE);
+    Game g(ROW, COL, MINE, ButtonSize);
 
     g.run();
 

@@ -120,6 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,19 +134,21 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="configer.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="EmojiButton.h" />
     <ClInclude Include="Label.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="StopWatch.h" />
+    <ClInclude Include="TimeBox.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicWidget.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="EmojiButton.cpp" />
     <ClCompile Include="Label.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="StopWatch.cpp" />
+    <ClCompile Include="TimeBox.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

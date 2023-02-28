@@ -7,8 +7,8 @@
 #endif // DEBUG
 
 
-Game::Game(int ROW, int COL, int ButtonSize, int Mine)
-    : game_row(ROW), game_col(COL), button_size(ButtonSize), game_mine(Mine) {}
+Game::Game(unsigned ROW, unsigned COL, unsigned Mine, unsigned ButtonSize)
+    : game_row(ROW), game_col(COL), game_mine(Mine), button_size(ButtonSize) {}
 
 Game::~Game()
 {
@@ -26,10 +26,7 @@ Game::~Game()
 
 void Game::run()
 {
-    init(game_row, game_col, game_mine);
-
-    // init 中已经包含 Window::beginDraw();
-
+    init(game_row, game_col, game_mine);    // Window::beginDraw();
 
     while (true)
     {
@@ -55,8 +52,11 @@ void Game::run()
                     return;
                 break;
             case WM_LBUTTONDOWN:            // 鼠标操作
+                if (lclick_forward())
+                    update_button();
+                break;
             case WM_RBUTTONDOWN:
-                if (click_forward())
+                if (rclick_forward())
                     update_button();
                 break;
             default:
@@ -73,11 +73,26 @@ void Game::run()
 }
 
 
-bool Game::click_forward()
+bool Game::rclick_forward()
 {
-    Emoji->getmsg(m_msg);
+    if (finished || !started)
+        return false;
 
-    if (Emoji->is_clicked()) {
+    for (unsigned i = 0; i < btns.size(); i++) 
+    {
+        if(btns[i]->isin(m_msg))
+        {
+            map->right_click(i / game_col, i % game_col);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Game::lclick_forward()
+{
+    if (emojiButton->isin(m_msg)) {
         init(game_row, game_col, game_mine);
         return false;
     }
@@ -85,32 +100,26 @@ bool Game::click_forward()
     if (finished)
         return false;
 
-    for (unsigned i = 0; i < btns.size(); i++) {
-
-        btns[i]->getmsg(m_msg);  // 传递消息
-
-        unsigned short key = btns[i]->is_clicked();
-
-        if (key == 1) {
-            // std::cout << "L";
-            if (!started) {
+    for (unsigned i = 0; i < btns.size(); i++)
+    {
+        if (btns[i]->isin(m_msg))
+        {
+            if (!started)
+            {
                 map->init(i / game_col, i % game_col);
                 started = true;
+                timer->start();
             }
             map->left_click(i / game_col, i % game_col);
             return true;
         }
-        else if (key == 2 && started) {
-            // std::cout << "R";
-            map->right_click(i / game_col, i % game_col);
-            return true;
-        }
-
     }
+
     return false;
 }
 
-void Game::init(int ROW, int COL, int Mine)
+
+void Game::init(unsigned ROW, unsigned COL, unsigned Mine)
 {
     started = false;
 
@@ -155,45 +164,56 @@ void Game::init(int ROW, int COL, int Mine)
 
 void Game::update_button()
 {
+    if (map->win()) {
+        timer->stop();
+        emojiButton->setImage(&icons[COOL]);
+        finished = true;
+    }
+
     while (!(map->empty_buffer())) {
         auto opt = map->front_buffer();
 
         switch (opt.first)
         {
         case Map::UNMARK:
-            btns[opt.second]->setText();
+            btns[opt.second]->setImage(false);
             labels[0]->setText(std::to_string(map->getmark()));
             break;
         case Map::DOMARK:
-            btns[opt.second]->setText("m");
+            btns[opt.second]->setImage(&icons[FLAG]);
             labels[0]->setText(std::to_string(map->getmark()));
             break;
         case Map::BLANK:
-            btns[opt.second]->setBkClr(RGB(244, 240, 230));
-            btns[opt.second]->active = false;
+            btns[opt.second]->setBkClr(COLOR[0]);
+            break;
+        case Map::TERM:
+            timer->stop();
+            emojiButton->setImage(&icons[CRY]);
+            map->fail();
+            finished = true;
+            continue;
             break;
         case Map::ONAMINE:
-            btns[opt.second]->setText("X");
-            btns[opt.second]->setBkClr(RED);
-            Emoji->setstat(EmojiButton::FAIL);
-            finished = true;
+            btns[opt.second]->setImage(&icons[MINERED]);
+            btns[opt.second]->setBkClr(RGB(254,0,0));
+            break;
+        case Map::OTHERMINE:
+            btns[opt.second]->setImage(&icons[MINE]);
+            btns[opt.second]->setBkClr(COLOR[0]);
+            break;
+        case Map::NOTAMINE:
+            btns[opt.second]->setImage(&icons[NOTAMINE]);
+            btns[opt.second]->setBkClr(COLOR[0]);
             break;
         default:
-            btns[opt.second]->setBkClr(RGB(244, 240, 230));
+            btns[opt.second]->setBkClr(COLOR[0]);
             btns[opt.second]->setText(std::to_string(opt.first));
             btns[opt.second]->setTextClr(COLOR[opt.first]);
-            btns[opt.second]->active = false;
             break;
         }
 
         map->pop_buffer();
     }
-
-    if (map->win()){
-        Emoji->setstat(EmojiButton::WIN);
-        finished = true;
-    }
-        
 
 }
 
@@ -202,7 +222,8 @@ void Game::show_button()
     for (auto btn : btns)
         btn->show();
 
-    Emoji->show();
+    emojiButton->show();
+    timer->show();
 
     for (auto lab : labels)
         lab->show();
@@ -214,10 +235,10 @@ void Game::init_button()
     int yspace = (Window::height() - button_size * (game_row + 2)) / 2;
 
     labels.push_back(new Label(xspace, yspace, 1.5 * button_size, 1.1 * button_size, WHITE, std::to_string(game_mine), RED));
-    labels.push_back(new Label(Window::width() - xspace - 1.5 * button_size, yspace, 1.5 * button_size, 1.1 * button_size, WHITE, "999", RED));
+    timer =  new TimeBox(Window::width() - xspace - 1.5 * button_size, yspace, 1.5 * button_size, 1.1 * button_size);
 
     xspace = (Window::width() - 1.1 * button_size) / 2;
-    Emoji = new EmojiButton(xspace, yspace, 1.1 * button_size, 1.1 * button_size, "./icons/smile.png", "./icons/cool.png", "./icons/cry.png");
+    emojiButton = new Button(xspace, yspace, 1.1 * button_size, 1.1 * button_size);
 
     xspace = (Window::width() - button_size * game_col) / 2;
     yspace += 2 * button_size;
@@ -229,6 +250,10 @@ void Game::init_button()
         btn = new Button(bx, by, button_size, button_size);
         i++;
     }
+
+    load_icons();
+
+    emojiButton->setImage(&icons[SMILE]);
 }
 
 void Game::clear_button()
@@ -238,11 +263,25 @@ void Game::clear_button()
     
     btns.clear();
     
-    delete Emoji;
-    Emoji = nullptr;
+    delete emojiButton;
+    emojiButton = nullptr;
+
+    delete timer;
+    timer = nullptr;
 
     for (auto lab : labels)
         delete lab;
 
     labels.clear();
+}
+
+void Game::load_icons()
+{
+    ::loadimage(&icons[SMILE], "./icons/smile.png", emojiButton->width() * 3 / 4, emojiButton->height() * 3 / 4);
+    ::loadimage(&icons[COOL], "./icons/cool.png", emojiButton->width() * 3 / 4, emojiButton->height() * 3 / 4);
+    ::loadimage(&icons[CRY], "./icons/cry.png", emojiButton->width() * 3 / 4, emojiButton->height() * 3 / 4);
+    ::loadimage(&icons[MINE], "./icons/mine2.png", button_size * 3 / 4, button_size * 3 / 4);
+    ::loadimage(&icons[MINERED], "./icons/mine1.png", button_size * 3 / 4, button_size * 3 / 4);
+    ::loadimage(&icons[NOTAMINE], "./icons/notamine.png", button_size * 3 / 4, button_size * 3 / 4);
+    ::loadimage(&icons[FLAG], "./icons/flag.png", button_size * 3 / 4, button_size * 3 / 4);
 }

@@ -36,7 +36,10 @@
     <ClInclude Include="Label.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="EmojiButton.h">
+    <ClInclude Include="TimeBox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StopWatch.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,7 +65,10 @@
     <ClCompile Include="Label.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="EmojiButton.cpp">
+    <ClCompile Include="TimeBox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StopWatch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

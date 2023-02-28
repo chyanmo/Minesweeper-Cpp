@@ -6,11 +6,14 @@
 class Map
 {
 public:
-    enum act{
+    enum Act{
+        TERM = -3,
         UNMARK = -2,
         DOMARK,
         BLANK,
-        ONAMINE = 9
+        ONAMINE = 9,
+        OTHERMINE,
+        NOTAMINE
     };
 
     Map(int ROW, int COL, int Mine);
@@ -21,10 +24,12 @@ public:
     void init(int r, int c);    // 将 mine_map 打乱，并生成 display_map
 
     bool win();
+    void fail();
 
     bool empty_buffer();
     std::pair<short,unsigned> front_buffer();
     void pop_buffer();
+    void clear_buffer();
 
     unsigned getmark();
 
@@ -34,8 +39,7 @@ private:
     bool is_mine(int r, int c);
     bool is_marked(int r, int c);
 
-    template<typename Function>
-    auto for_around(int r, int c, Function fn);
+    void for_around(int r, int c, auto Func);   // 仅在 Map.cpp 内定义和使用
 
     void try_open_around(int r, int c);
 

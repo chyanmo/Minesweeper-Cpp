@@ -1,38 +1,25 @@
 ﻿#pragma once
 #include "Window.h"
 #include "Button.h"
-#include "EmojiButton.h"
 #include "Map.h"
+#include "TimeBox.h"
 #include <vector>
 
 class Game
 {
 public:
-    Game(int ROW = 9, int COL = 9, int ButtonSize = 30, int Mine = 8);
-    ~Game();
-    // 启动
-    void run();
-
-private:
-    
-    bool click_forward();
-
-    void init(int ROW = 9, int COL = 9, int Mine = 8);
-
-private:
-
-
-    void init_button();
-    void show_button();
-    void update_button();
-    void clear_button();
-    
-
-
-private:
+    enum Icon {
+        SMILE,
+        COOL,
+        CRY,
+        FLAG,
+        MINE,
+        MINERED,
+        NOTAMINE
+    };
 
     const COLORREF COLOR[9] = {
-        WHITE,
+        RGB(244, 240, 230),
         RGB(0,4,251),
         RGB(1,124,8),
         RGB(247,2,7),
@@ -43,14 +30,36 @@ private:
         RGB(126,126,126)
     };
 
+    Game(unsigned ROW = 9, unsigned COL = 9, unsigned Mine = 10, unsigned ButtonSize = 25);
+    ~Game();
+
+    void run();
+
+private:
+
+    void load_icons();
+    void init(unsigned ROW, unsigned COL, unsigned Mine);
+
+    void init_button();
+    void show_button();
+    void update_button();
+    void clear_button();
+
+    bool lclick_forward();
+    bool rclick_forward();
+    
+private:
+
     bool started = false;
     bool inited = false;
     bool finished = false;
 
-    int game_row;
-    int game_col;
-    int game_mine;
-    int button_size;
+    unsigned game_row;
+    unsigned game_col;
+    unsigned game_mine;
+    unsigned button_size;
+
+    IMAGE icons[7];
 
     ExMessage m_msg;
 
@@ -58,7 +67,8 @@ private:
     Map* map = nullptr;
 
     std::vector<Label*> labels;
-    EmojiButton* Emoji = nullptr;
+    Button* emojiButton = nullptr;
+    TimeBox* timer = nullptr;
     std::vector<Button*> btns;
 };
 

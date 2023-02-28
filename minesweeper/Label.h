@@ -7,11 +7,11 @@ class Label :
 {
 public:
     Label(int x, int y, int w, int h,
-        const std::string& text = std::string(),
-        COLORREF textcolor = BLACK, COLORREF backgroundcolor = RGB(100, 100, 200));
+        const std::string& text = "",
+        COLORREF textcolor = BLACK, COLORREF backgroundcolor = WHITE);
 
     Label(int x, int y, int w, int h, COLORREF backgroundcolor,
-        const std::string& text = std::string(),
+        const std::string& text = "",
         COLORREF textcolor = BLACK);
 
     void show() override;

@@ -3,47 +3,33 @@
 Button::Button(int x, int y, int w, int h)
     :Label(x,y,w,h,RGB(217, 217, 243)) {}
 
-bool Button::isin()
+void Button::show()
 {
-    if (m_msg.x > m_x && m_msg.x < m_x + m_w &&
-        m_msg.y > m_y && m_msg.y < m_y + m_h)
-        return true;
-    return false;
-}
-
-unsigned short Button::is_clicked()
-{
-    if (isin()) {
-        switch (m_msg.message)
-        {
-        case WM_RBUTTONDOWN:
-            return 2;
-        case WM_LBUTTONDOWN:
-            return 1;
-        }
+    if (showImg) {
+        ::setfillcolor(bk_clr);
+        ::fillroundrect(m_x, m_y, m_x + m_w, m_y + m_h, 5, 5);
+        ::putimage(m_x + m_w / 8 + 1, m_y + m_h / 8 + 1, img);
     }
-    return 0;
+    else
+        Label::show();
 }
 
-void Button::getmsgx(const ExMessage& msg)
+bool Button::isin(const ExMessage& msg)
 {
-    m_msg = msg;
-    if (!isin())
-        bk_clr = normal_clr;
-    else bk_clr = hover_clr;
+    if (msg.x >= m_x && msg.x < m_x + m_w &&
+        msg.y >= m_y && msg.y < m_y + m_h)
+        return true;
+    else
+        return false;
 }
 
-void Button::getmsg(const ExMessage& msg)
+void Button::setImage(IMAGE* ImgFile)
 {
-    m_msg = msg;
+    img = ImgFile;
+    showImg = true;
 }
 
-void Button::setBkClr(COLORREF c)
+void Button::setImage(bool showImg)
 {
-    bk_clr = normal_clr = c;
-}
-
-void Button::setHoverClr(COLORREF c)
-{
-    hover_clr = c;
+    this->showImg = showImg;
 }

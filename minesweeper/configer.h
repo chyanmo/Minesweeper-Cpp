@@ -8,4 +8,4 @@
 #include <easyx.h>
 #include <string>
 
-#define DEBUG
+// #define DEBUG

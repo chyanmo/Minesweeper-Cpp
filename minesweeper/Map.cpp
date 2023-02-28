@@ -17,7 +17,7 @@ Map::Map(int ROW, int COL, int Mine)
 
     // 分配空间
     mine_map = new bool[n]();
-    display_map = new int[n];
+    display_map = new int[n]();
     find_map = new bool[n]();
     mark_map = new bool[n]();
     // 布雷
@@ -35,39 +35,33 @@ Map::~Map()
     mark_map = mine_map = find_map = nullptr;
 }
 
-template<typename Function>
-auto Map::for_around(int r, int c, Function fn)
+void Map::for_around(int r, int c, auto Func)
 {
-    for (int k = r - 1; k < r + 1; k++)
+    for (int k = r - 1; k <= r + 1; k++)
         for (int l = c - 1; l <= c + 1; l++)
-            fn(k, l);
-    fn(r + 1, c - 1);
-    fn(r + 1, c);
-    return fn(r + 1, c + 1);
+            Func(k, l);
 }
 
 void Map::init(int click_r, int click_c)
 {
-    int total = for_around(click_r, click_c,
-        [this, count = 0](int r, int c)mutable {count += is_in(r, c); return (int)count; }
-    );
-    if (m_row * m_col < m_mine + total)
-        total = 0;
+    // 统计被点击的格子周围有几个格子
+    int total = 0;
+    if (m_row * m_col >= m_mine + total)
+        for_around(click_r, click_c, [this, &total](int r, int c) {if (is_in(r, c)) total++; });
 
     // 将 mine_map 打乱
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::shuffle(mine_map + total, mine_map + m_row * m_col, std::default_random_engine(seed));
 
-    // 保证点的地方周围没有地雷 ( 如果可能的话 )
+    // 保证首次点击的周围没有地雷 ( 如果可能的话 )
     for_around(click_r, click_c,
-        [this, count = 0](int r, int c)mutable {if (is_in(r, c)) std::swap(mine_map[r * m_col + c], mine_map[count++]); }
+        [this, i = 0](int r, int c)mutable {if (is_in(r, c)) std::swap(mine_map[r * m_col + c], mine_map[i++]); }
     );
 
     // 生成 displayed_map
     for (unsigned i = 0; i < m_row; i++)
         for (unsigned j = 0; j < m_col; j++)
-            display_map[i * m_col + j] = for_around(i, j,
-                [this, count = 0](int r, int c)mutable {count += is_mine(r, c); return (int)count; });
+            for_around(i, j, [this, i, j](int r, int c) {if (is_mine(r, c)) display_map[i * m_col + j]++; });
 
 #ifdef DEBUG
     debug();
@@ -76,7 +70,35 @@ void Map::init(int click_r, int click_c)
 
 bool Map::win()
 {
-    return !(bool)m_remain;
+    if (m_remain == 0) {
+        for (unsigned i = 0; i < m_row * m_col; i++)
+            if (mine_map[i] && !mark_map[i])
+                buffer.push(std::make_pair((short)DOMARK, i));
+        m_mark = 0;
+        return true;
+    }
+    return false;
+}
+
+void Map::fail()
+{
+    clear_buffer();
+
+    for (unsigned i = 0; i < m_row * m_col; i++) 
+    {
+        // 是地雷
+        if (mine_map[i]) {
+            // 被点击
+            if (find_map[i])
+                buffer.push(std::make_pair((short)ONAMINE, i));
+            // 未被标记
+            else if (!mark_map[i])
+                buffer.push(std::make_pair((short)OTHERMINE, i));
+        }
+        // 不是地雷，但被标记
+        else if (mark_map[i])
+            buffer.push(std::make_pair((short)NOTAMINE, i));
+    }
 }
 
 bool Map::empty_buffer()
@@ -92,6 +114,12 @@ std::pair<short, unsigned> Map::front_buffer()
 void Map::pop_buffer()
 {
     buffer.pop();
+}
+
+void Map::clear_buffer()
+{
+    while (buffer.size() != 0)
+        buffer.pop();
 }
 
 unsigned Map::getmark()
@@ -139,6 +167,7 @@ void Map::left_click(int r, int c)
     // 被标记的，取消标记
     if (mark_map[i]) {
         mark_map[i] = false;
+        m_mark++;
         buffer.push(std::make_pair((short)UNMARK, i));
     }
 
@@ -157,8 +186,10 @@ void Map::left_click(int r, int c)
     // 普通格子，点开它
     else { 
         find_map[i] = true; 
-        if (mine_map[i])
-            buffer.push(std::make_pair((short)ONAMINE, i));
+        if (mine_map[i]) {
+            clear_buffer();
+            buffer.push(std::make_pair((short)TERM, 0));
+        }
         else {
             m_remain--;
             buffer.push(std::make_pair((short)(display_map[i]), i));
@@ -167,17 +198,43 @@ void Map::left_click(int r, int c)
 }
 
 void Map::try_open_around(int r, int c) {
+    
+    int mine_count = display_map[r * m_col + c];
 
-    // 统计周围有标记的格子数
-    int mark_count = for_around(r, c, [this, count = 0](int r, int c)mutable {count += is_marked(r, c); return (int)count; });
-
-    // 假设标记的格子数不少于显示的数字，点开其他格子
-    if (mark_count >= display_map[r * m_col + c]) 
-    {
+    // 0-扩展
+    if (mine_count == 0) {
         for (int i = r - 1; i <= r + 1; i++)
             for (int j = c - 1; j <= c + 1; j++)
                 if (is_in(i, j) && !(find_map[i * m_col + j]) && !(mark_map[i * m_col + j]))
                     left_click(i, j);
+    }
+    else {
+        bool SAFE = true;
+        int mark_count = 0;
+        for_around(r, c, [this, &mark_count](int r, int c) { if (is_marked(r, c)) mark_count++; });
+
+        // 假设标记数不少于显示的数字，点开其他格子
+        if (mark_count >= mine_count)
+        {
+            for_around(r, c, [this, &SAFE](int r, int c) {
+                if (is_in(r, c) && !mark_map[r * m_col + c] && mine_map[r * m_col + c])
+                {
+                    SAFE = false;
+                    find_map[r * m_col + c] = true;
+                } });
+
+            if (!SAFE) {
+                clear_buffer();
+                buffer.push(std::make_pair((short)TERM, 0));
+                return;
+            }
+
+            for (int i = r - 1; i <= r + 1; i++)
+                for (int j = c - 1; j <= c + 1; j++)
+                    if (is_in(i, j) && !(find_map[i * m_col + j]) && !(mark_map[i * m_col + j]))
+                        left_click(i, j);
+        }
+
     }
 }
 
