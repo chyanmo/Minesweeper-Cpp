@@ -54,9 +54,15 @@ void Map::init(int click_r, int click_c)
     std::shuffle(mine_map + total, mine_map + m_row * m_col, std::default_random_engine(seed));
 
     // 保证首次点击的周围没有地雷 ( 如果可能的话 )
-    for_around(click_r, click_c,
-        [this, i = 0](int r, int c)mutable {if (is_in(r, c)) std::swap(mine_map[r * m_col + c], mine_map[i++]); }
-    );
+    int k = 0;
+    for (int i = click_r - 1; i <= click_r + 1; i++)
+        for (int j = click_c - 1; j <= click_c + 1; j++)
+            if (is_in(i, j)) {
+                if (i * m_col + j < total) continue;
+                while ((k / m_col - click_r) * (k / m_col - click_r) + (k % m_col - click_c) * (k % m_col - click_c) <= 2) k++;
+                std::swap(mine_map[i * m_col + j], mine_map[k]);
+                k++;
+            }
 
     // 生成 displayed_map
     for (unsigned i = 0; i < m_row; i++)
