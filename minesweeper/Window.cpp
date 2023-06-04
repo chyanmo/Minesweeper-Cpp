@@ -20,11 +20,6 @@ void Window::setWindowTitle(const std::string& title)
     ::SetWindowText(m_handle, title.c_str());
 }
 
-int Window::exec()
-{
-    return std::getchar();
-}
-
 int Window::width()
 {
     return ::getwidth();

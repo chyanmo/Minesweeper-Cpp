@@ -4,6 +4,9 @@
 #include "Map.h"
 #include "TimeBox.h"
 #include <vector>
+#include <shared_mutex>
+#include <thread>
+
 
 class Game
 {
@@ -47,6 +50,9 @@ private:
 
     bool lclick_forward();
     bool rclick_forward();
+
+    void event_handle();
+    void show();
     
 private:
 
@@ -70,6 +76,9 @@ private:
     Button* emojiButton = nullptr;
     TimeBox* timer = nullptr;
     std::vector<Button*> btns;
+
+    bool quit_ = false;
+    std::shared_mutex mutex_;
 };
 
 

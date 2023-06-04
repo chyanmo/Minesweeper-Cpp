@@ -29,7 +29,7 @@ public:
     bool empty_buffer();
     std::pair<short,unsigned> front_buffer();
     void pop_buffer();
-    void clear_buffer();
+    
 
     unsigned getmark();
 
@@ -39,7 +39,9 @@ private:
     bool is_mine(int r, int c);
     bool is_marked(int r, int c);
 
-    void for_around(int r, int c, auto Func);   // 仅在 Map.cpp 内定义和使用
+    void clear_buffer();
+
+    void for_around(int r, int c, auto Func);
 
     void try_open_around(int r, int c);
 

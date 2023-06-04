@@ -1,5 +1,4 @@
 ﻿#include "Game.h"
-#include <thread>
 #include <chrono>
 
 #ifdef DEBUG
@@ -26,52 +25,74 @@ Game::~Game()
 
 void Game::run()
 {
-    init(game_row, game_col, game_mine);    // Window::beginDraw();
+    init(game_row, game_col, game_mine);    // init 函数包含 Window::beginDraw();
 
-    while (true)
-    {
-        Window::clear();
+    // 创建两个线程，分别负责事件处理和显示
+    std::thread eventThread(&Game::event_handle, this);
+    std::thread showThread(&Game::show, this);
 
-        show_button();
-
-        if (Window::hasMsg()) {
-            m_msg = Window::getMsg();   // 获取消息
-
-            switch (m_msg.message)
-            {
-            case WM_KEYDOWN:    // 键盘操作
-                if (m_msg.vkcode == 0x52)       // R
-                    init(game_row, game_col, game_mine);
-                else if (m_msg.vkcode == 0x51)  // Q
-                    init(9, 9, 10);
-                else if (m_msg.vkcode == 0x57)  // W
-                    init(16, 16, 40);
-                else if (m_msg.vkcode == 0x45)  // E
-                    init(16, 30, 99);
-                else if (m_msg.vkcode == VK_ESCAPE)
-                    return;
-                break;
-            case WM_LBUTTONDOWN:            // 鼠标操作
-                if (lclick_forward())
-                    update_button();
-                break;
-            case WM_RBUTTONDOWN:
-                if (rclick_forward())
-                    update_button();
-                break;
-            default:
-                break;
-            }
-        }
-        else
-            std::this_thread::sleep_for(std::chrono::milliseconds(4));
-
-
-        Window::flushDraw();
-    }
+    // 等待两个线程
+    eventThread.join();
+    showThread.join();
+    
     Window::endDraw();
 }
 
+void Game::event_handle() {
+    while (true)
+    {
+        ::getmessage(&m_msg, EX_MOUSE | EX_KEY);   // 获取消息
+
+        switch (m_msg.message) {
+        case WM_KEYDOWN:    // 键盘操作
+            switch (m_msg.vkcode) {
+            case 0x52: // R
+                init(game_row, game_col, game_mine);
+                break;
+            case 0x51: // Q
+                init(9, 9, 10);
+                break;
+            case 0x57: // W
+                init(16, 16, 40);
+                break;
+            case 0x45: // E
+                init(16, 30, 99);
+                break;
+            case VK_ESCAPE: {
+                std::unique_lock<std::shared_mutex> lock(mutex_);
+                quit_ = true;
+                return;
+            }
+            default:
+                continue;
+            }
+            break;
+        case WM_LBUTTONDOWN:    // 鼠标操作
+            if (lclick_forward())
+                update_button();
+            break;
+        case WM_RBUTTONDOWN:
+            if (rclick_forward())
+                update_button();
+            break;
+        }
+    }
+}
+
+void Game::show() {
+    while (true) {
+        {
+            std::shared_lock<std::shared_mutex> lock(mutex_);
+            if (quit_) break;
+
+            Window::clear();
+            show_button();
+            Window::flushDraw();
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(33)); // 每秒约30帧
+    }
+}
 
 bool Game::rclick_forward()
 {
@@ -123,6 +144,9 @@ void Game::init(unsigned ROW, unsigned COL, unsigned Mine)
 {
     started = false;
 
+    // 获取写锁
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+
     if (ROW == game_row && COL == game_col && Mine == game_mine && inited)
         ;
     else {
@@ -164,6 +188,9 @@ void Game::init(unsigned ROW, unsigned COL, unsigned Mine)
 
 void Game::update_button()
 {
+    // 获取写锁
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+
     if (map->win()) {
         timer->stop();
         emojiButton->setImage(&icons[COOL]);
@@ -171,20 +198,21 @@ void Game::update_button()
     }
 
     while (!(map->empty_buffer())) {
-        auto opt = map->front_buffer();
+        // opType: operationType 操作的类型，i: index 被操作元素的下标
+        auto [opType, i] = map->front_buffer();
 
-        switch (opt.first)
+        switch (opType)
         {
         case Map::UNMARK:
-            btns[opt.second]->setImage(false);
+            btns[i]->setImage(false);
             labels[0]->setText(std::to_string(map->getmark()));
             break;
         case Map::DOMARK:
-            btns[opt.second]->setImage(&icons[FLAG]);
+            btns[i]->setImage(&icons[FLAG]);
             labels[0]->setText(std::to_string(map->getmark()));
             break;
         case Map::BLANK:
-            btns[opt.second]->setBkClr(COLOR[0]);
+            btns[i]->setBkClr(COLOR[0]);
             break;
         case Map::TERM:
             timer->stop();
@@ -194,27 +222,26 @@ void Game::update_button()
             continue;
             break;
         case Map::ONAMINE:
-            btns[opt.second]->setImage(&icons[MINERED]);
-            btns[opt.second]->setBkClr(RGB(254,0,0));
+            btns[i]->setImage(&icons[MINERED]);
+            btns[i]->setBkClr(RGB(254,0,0));
             break;
         case Map::OTHERMINE:
-            btns[opt.second]->setImage(&icons[MINE]);
-            btns[opt.second]->setBkClr(COLOR[0]);
+            btns[i]->setImage(&icons[MINE]);
+            btns[i]->setBkClr(COLOR[0]);
             break;
         case Map::NOTAMINE:
-            btns[opt.second]->setImage(&icons[NOTAMINE]);
-            btns[opt.second]->setBkClr(COLOR[0]);
+            btns[i]->setImage(&icons[NOTAMINE]);
+            btns[i]->setBkClr(COLOR[0]);
             break;
         default:
-            btns[opt.second]->setBkClr(COLOR[0]);
-            btns[opt.second]->setText(std::to_string(opt.first));
-            btns[opt.second]->setTextClr(COLOR[opt.first]);
+            btns[i]->setBkClr(COLOR[0]);
+            btns[i]->setText(std::to_string(opType));
+            btns[i]->setTextClr(COLOR[opType]);
             break;
         }
 
         map->pop_buffer();
     }
-
 }
 
 void Game::show_button()
