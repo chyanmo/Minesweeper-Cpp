@@ -8,4 +8,6 @@
 #include <easyx.h>
 #include <string>
 
+using u16_t = uint16_t;
+
 // #define DEBUG

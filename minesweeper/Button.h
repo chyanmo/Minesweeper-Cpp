@@ -17,6 +17,6 @@ public:
 
 protected:
 
-    bool showImg;
+    bool showImg = false;
     IMAGE* img = nullptr;
 };

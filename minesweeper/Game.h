@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "configer.h"
 #include "Window.h"
 #include "Button.h"
 #include "Map.h"
@@ -18,7 +19,7 @@ public:
         FLAG,
         MINE,
         MINERED,
-        NOTAMINE
+        MINEREDX
     };
 
     const COLORREF COLOR[9] = {

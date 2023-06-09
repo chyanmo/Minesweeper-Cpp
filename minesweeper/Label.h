@@ -16,7 +16,7 @@ public:
 
     void show() override;
 
-    void setText(const std::string & = std::string());  // 设置文本
+    void setText(const std::string & text = "");        // 设置文本
     void setTextClr(COLORREF);                          // 设置文本颜色
     void setBkClr(COLORREF);                            // 设置背景颜色
 

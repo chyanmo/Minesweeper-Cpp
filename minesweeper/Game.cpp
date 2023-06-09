@@ -96,7 +96,7 @@ void Game::show() {
 
 bool Game::rclick_forward()
 {
-    if (finished || !started)
+    if (finished || !started) [[unlikely]]
         return false;
 
     for (unsigned i = 0; i < btns.size(); i++) 
@@ -113,19 +113,19 @@ bool Game::rclick_forward()
 
 bool Game::lclick_forward()
 {
-    if (emojiButton->isin(m_msg)) {
+    if (emojiButton->isin(m_msg)) [[unlikely]] {
         init(game_row, game_col, game_mine);
         return false;
     }
 
-    if (finished)
+    if (finished) [[unlikely]]
         return false;
 
     for (unsigned i = 0; i < btns.size(); i++)
     {
         if (btns[i]->isin(m_msg))
         {
-            if (!started)
+            if (!started) [[unlikely]]
             {
                 map->init(i / game_col, i % game_col);
                 started = true;
@@ -188,6 +188,7 @@ void Game::init(unsigned ROW, unsigned COL, unsigned Mine)
 
 void Game::update_button()
 {
+    using enum Map::OpType;
     // 获取写锁
     std::unique_lock<std::shared_mutex> lock(mutex_);
 
@@ -203,39 +204,39 @@ void Game::update_button()
 
         switch (opType)
         {
-        case Map::UNMARK:
+        case UNMARK:
             btns[i]->setImage(false);
             labels[0]->setText(std::to_string(map->getmark()));
             break;
-        case Map::DOMARK:
+        case DOMARK:
             btns[i]->setImage(&icons[FLAG]);
             labels[0]->setText(std::to_string(map->getmark()));
             break;
-        case Map::BLANK:
+        [[likely]] case BLANK:
             btns[i]->setBkClr(COLOR[0]);
             break;
-        case Map::TERM:
+        [[unlikely]] case TERM:
             timer->stop();
             emojiButton->setImage(&icons[CRY]);
             map->fail();
             finished = true;
             continue;
             break;
-        case Map::ONAMINE:
+        [[unlikely]] case ONAMINE:
             btns[i]->setImage(&icons[MINERED]);
             btns[i]->setBkClr(RGB(254,0,0));
             break;
-        case Map::OTHERMINE:
+        [[unlikely]] case OTHERMINE:
             btns[i]->setImage(&icons[MINE]);
             btns[i]->setBkClr(COLOR[0]);
             break;
-        case Map::NOTAMINE:
-            btns[i]->setImage(&icons[NOTAMINE]);
+        [[unlikely]] case NOTAMINE:
+            btns[i]->setImage(&icons[MINEREDX]);
             btns[i]->setBkClr(COLOR[0]);
             break;
-        default:
+        [[likely]] default:
             btns[i]->setBkClr(COLOR[0]);
-            btns[i]->setText(std::to_string(opType));
+            btns[i]->setText(std::to_string( static_cast<int>(opType) ));
             btns[i]->setTextClr(COLOR[opType]);
             break;
         }
@@ -309,6 +310,6 @@ void Game::load_icons()
     ::loadimage(&icons[CRY], "./icons/cry.png", emojiButton->width() * 3 / 4, emojiButton->height() * 3 / 4);
     ::loadimage(&icons[MINE], "./icons/mine2.png", button_size * 3 / 4, button_size * 3 / 4);
     ::loadimage(&icons[MINERED], "./icons/mine1.png", button_size * 3 / 4, button_size * 3 / 4);
-    ::loadimage(&icons[NOTAMINE], "./icons/notamine.png", button_size * 3 / 4, button_size * 3 / 4);
+    ::loadimage(&icons[MINEREDX], "./icons/mine3.png", button_size * 3 / 4, button_size * 3 / 4);
     ::loadimage(&icons[FLAG], "./icons/flag.png", button_size * 3 / 4, button_size * 3 / 4);
 }
