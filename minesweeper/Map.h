@@ -16,24 +16,24 @@ public:
         NOTAMINE
     };
 
-    Map(u16_t ROW, u16_t COL, u16_t Mine);
+    Map(uint16_t ROW, uint16_t COL, uint16_t Mine);
     ~Map();
 
-    void left_click(u16_t r, u16_t c);
-    void right_click(u16_t r, u16_t c);
-    void init(u16_t r, u16_t c);    // 将 mine_map 打乱，并生成 display_map
+    void left_click(uint16_t r, uint16_t c);
+    void right_click(uint16_t r, uint16_t c);
+    void init(uint16_t r, uint16_t c);    // 将 mine_map 打乱，并生成 display_map
 
     bool win();
     void fail();
 
     bool empty_buffer();
 
-    std::pair<char, u16_t> front_buffer();
+    std::pair<int8_t, uint16_t> front_buffer();
 
     void pop_buffer();
     
 
-    u16_t getmark();
+    uint16_t getmark();
 
 private:
 
@@ -42,7 +42,7 @@ private:
     bool is_marked(int r, int c);
 
     void clear_buffer();
-    inline void push_buffer(char opType, u16_t i);
+    inline void push_buffer(int8_t opType, uint16_t i);
 
     inline void for_around(int r, int c, auto Func);
 
@@ -52,15 +52,15 @@ private:
     void debug();
 #endif
 
-    u16_t m_row;
-    u16_t m_col;
-    u16_t m_mine;
-    u16_t m_mark;
-    u16_t m_remain;
+    uint16_t m_row;
+    uint16_t m_col;
+    uint16_t m_mine;
+    uint16_t m_mark;
+    uint16_t m_remain;
 
-    std::queue<std::pair<char, u16_t>> buffer;
+    std::queue<std::pair<int8_t, uint16_t>> buffer;
 
-    char* mine_map;
+    int8_t* mine_map;
     bool* find_map;
     bool* mark_map;
 };

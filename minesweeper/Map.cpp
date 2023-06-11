@@ -8,19 +8,19 @@
 #include <iostream>
 #endif // DEBUG
 
-Map::Map(u16_t ROW, u16_t COL, u16_t Mine)
+Map::Map(uint16_t ROW, uint16_t COL, uint16_t Mine)
     :m_row(ROW), m_col(COL)
 {
-    const u16_t n = ROW * COL;
+    const uint16_t n = ROW * COL;
     m_mark = m_mine = Mine < n ? Mine : n;
     m_remain = n - m_mine;
 
     // 分配空间
-    mine_map = new char[n] {};
+    mine_map = new int8_t[n] {};
     find_map = new bool[n] {};
     mark_map = new bool[n] {};
     // 布雷
-    for (u16_t i = n - m_mine; i < n; i++)
+    for (uint16_t i = n - m_mine; i < n; i++)
         mine_map[i] = -1;
 }
 
@@ -32,10 +32,10 @@ Map::~Map()
     mark_map = find_map = nullptr;
 }
 
-void Map::init(u16_t click_r, u16_t click_c)
+void Map::init(uint16_t click_r, uint16_t click_c)
 {
     // 统计被点击的格子周围有几个格子
-    char total = 0;
+    int8_t total = 0;
     if (m_row * m_col >= m_mine + total)
         for_around(click_r, click_c, [this, &total](int r, int c) {if (is_in(r, c)) total++; });
 
@@ -55,9 +55,9 @@ void Map::init(u16_t click_r, u16_t click_c)
             }
     }
 
-    // 生成 displayed_map
-    for (int i = 0; i < m_row; i++)
-        for (int j = 0; j < m_col; j++)
+    // 生成 mine_map
+    for (uint16_t i = 0; i < m_row; i++)
+        for (uint16_t j = 0; j < m_col; j++)
             if (!mine_map[i * m_col + j])
                 for_around(i, j, [this, i, j](int r, int c) {if (is_mine(r, c)) mine_map[i * m_col + j]++; });
 
@@ -69,7 +69,7 @@ void Map::init(u16_t click_r, u16_t click_c)
 bool Map::win()
 {
     if (m_remain == 0) {
-        for (int i = 0; i < m_row * m_col; i++)
+        for (uint16_t i = 0; i < m_row * m_col; i++)
             if (mine_map[i] == -1 && !mark_map[i])
                 push_buffer(DOMARK, i);
         m_mark = 0;
@@ -82,7 +82,7 @@ void Map::fail()
 {
     clear_buffer();
 
-    for (int i = 0; i < m_row * m_col; i++)
+    for (uint16_t i = 0; i < m_row * m_col; i++)
     {
         // 是地雷
         if (mine_map[i] == -1) {
@@ -104,7 +104,7 @@ bool Map::empty_buffer()
     return buffer.empty();
 }
 
-std::pair<char, u16_t> Map::front_buffer()
+std::pair<int8_t, uint16_t> Map::front_buffer()
 {
     return buffer.front();
 }
@@ -114,7 +114,7 @@ void Map::pop_buffer()
     buffer.pop();
 }
 
-inline void Map::push_buffer(char opType, u16_t i) {
+inline void Map::push_buffer(int8_t opType, uint16_t i) {
     buffer.push(std::make_pair(opType, i));
 }
 
@@ -124,7 +124,7 @@ void Map::clear_buffer()
         buffer.pop();
 }
 
-u16_t Map::getmark()
+uint16_t Map::getmark()
 {
     return m_mark;
 }
@@ -144,9 +144,9 @@ bool Map::is_marked(int r, int c)
     return (is_in(r, c)) && (mark_map[r * m_col + c]);
 }
 
-void Map::right_click(u16_t r, u16_t c)
+void Map::right_click(uint16_t r, uint16_t c)
 {
-    const u16_t i = r * m_col + c;
+    const uint16_t i = r * m_col + c;
     // 作用于点开的格子
     if (find_map[i])
         try_open_around(r, c);
@@ -163,9 +163,9 @@ void Map::right_click(u16_t r, u16_t c)
     }
 }
 
-void Map::left_click(u16_t r, u16_t c)
+void Map::left_click(uint16_t r, uint16_t c)
 {
-    const u16_t i = r * m_col + c;
+    const uint16_t i = r * m_col + c;
     // 被标记的，取消标记
     if (mark_map[i]) {
         mark_map[i] = false;
@@ -201,7 +201,7 @@ void Map::left_click(u16_t r, u16_t c)
 
 void Map::try_open_around(int r, int c) {
     
-    char mine_count = mine_map[r * m_col + c];
+    int8_t mine_count = mine_map[r * m_col + c];
 
     // 0-扩展
     if (mine_count == 0) {
@@ -252,12 +252,12 @@ void Map::debug()
 {
     std::cout << std::endl << "Mine map:" << std::endl;
     
-    for (u16_t r = 0; r < m_row; r++) {
-        for (u16_t c = 0; c < m_col; c++){
+    for (uint16_t r = 0; r < m_row; r++) {
+        for (uint16_t c = 0; c < m_col; c++){
             if (mine_map[r * m_col + c] == -1)
                 std::cout << "x ";
             else
-                std::cout << static_cast<int>( mine_map[r * m_col + c] ) << " ";
+                std::cout << mine_map[r * m_col + c] << " ";
         }
         std::cout << std::endl;
     }

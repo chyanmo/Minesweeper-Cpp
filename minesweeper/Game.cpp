@@ -6,7 +6,7 @@
 #endif // DEBUG
 
 
-Game::Game(unsigned ROW, unsigned COL, unsigned Mine, unsigned ButtonSize)
+Game::Game(uint16_t ROW, uint16_t COL, uint16_t Mine, uint16_t ButtonSize)
     : game_row(ROW), game_col(COL), game_mine(Mine), button_size(ButtonSize) {}
 
 Game::~Game()
@@ -80,7 +80,12 @@ void Game::event_handle() {
 }
 
 void Game::show() {
+    // 下一帧的期望时间
+    auto expect_time = std::chrono::steady_clock::now();
+    auto interval_ = std::chrono::milliseconds(1000 / FPS);
+
     while (true) {
+        // 显示一帧
         {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             if (quit_) break;
@@ -89,8 +94,14 @@ void Game::show() {
             show_button();
             Window::flushDraw();
         }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(33)); // 每秒约30帧
+        // 更新下一帧的期望时间
+        expect_time += interval_;
+        // 睡眠等待下一帧
+        auto time_now = std::chrono::steady_clock::now();
+        if (time_now < expect_time)
+            std::this_thread::sleep_for(expect_time - time_now);
+        else if (expect_time + 2*interval_ < time_now )
+            expect_time = time_now;
     }
 }
 
@@ -140,7 +151,7 @@ bool Game::lclick_forward()
 }
 
 
-void Game::init(unsigned ROW, unsigned COL, unsigned Mine)
+void Game::init(uint16_t ROW, uint16_t COL, uint16_t Mine)
 {
     started = false;
 

@@ -34,7 +34,7 @@ public:
         RGB(126,126,126)
     };
 
-    Game(unsigned ROW = 9, unsigned COL = 9, unsigned Mine = 10, unsigned ButtonSize = 25);
+    Game(uint16_t ROW = 9, uint16_t COL = 9, uint16_t Mine = 10, uint16_t ButtonSize = 25);
     ~Game();
 
     void run();
@@ -42,7 +42,7 @@ public:
 private:
 
     void load_icons();
-    void init(unsigned ROW, unsigned COL, unsigned Mine);
+    void init(uint16_t ROW, uint16_t COL, uint16_t Mine);
 
     void init_button();
     void show_button();
@@ -61,10 +61,12 @@ private:
     bool inited = false;
     bool finished = false;
 
-    unsigned game_row;
-    unsigned game_col;
-    unsigned game_mine;
-    unsigned button_size;
+    uint16_t game_row;
+    uint16_t game_col;
+    uint16_t game_mine;
+    uint16_t button_size;
+
+    uint16_t FPS = 30;
 
     IMAGE icons[7];
 
