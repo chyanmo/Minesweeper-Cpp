@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "configer.h"
-#include <utility>
+#include <utility>  // std::pair
 #include <queue>
 
 class Map
@@ -16,24 +16,24 @@ public:
         NOTAMINE
     };
 
-    Map(uint16_t ROW, uint16_t COL, uint16_t Mine);
+    Map(int ROW, int COL, int Mine);
     ~Map();
 
-    void left_click(uint16_t r, uint16_t c);
-    void right_click(uint16_t r, uint16_t c);
-    void init(uint16_t r, uint16_t c);    // 将 mine_map 打乱，并生成 display_map
+    void left_click(int r, int c);
+    void right_click(int r, int c);
+    void init(int r, int c);    // 将 mine_map 打乱，并生成 display_map
 
     bool win();
     void fail();
 
     bool empty_buffer();
 
-    std::pair<int8_t, uint16_t> front_buffer();
+    std::pair<intf8_t, int> front_buffer();
 
     void pop_buffer();
     
 
-    uint16_t getmark();
+    int getmark();
 
 private:
 
@@ -42,9 +42,9 @@ private:
     bool is_marked(int r, int c);
 
     void clear_buffer();
-    inline void push_buffer(int8_t opType, uint16_t i);
+    inline void push_buffer(intf8_t opType, int index_);
 
-    inline void for_around(int r, int c, auto Func);
+    void for_around(int r, int c, auto Func);
 
     void try_open_around(int r, int c);
 
@@ -52,15 +52,15 @@ private:
     void debug();
 #endif
 
-    uint16_t m_row;
-    uint16_t m_col;
-    uint16_t m_mine;
-    uint16_t m_mark;
-    uint16_t m_remain;
+    int m_row;
+    int m_col;
+    int m_mine;
+    int m_mark;
+    int m_remain;
 
-    std::queue<std::pair<int8_t, uint16_t>> buffer;
+    std::queue<std::pair<intf8_t, int>> buffer;
 
-    int8_t* mine_map;
+    intf8_t* mine_map;
     bool* find_map;
     bool* mark_map;
 };

@@ -1,11 +1,12 @@
 ﻿#pragma once
 
-// 字符集问题
 #ifdef UNICODE
 #undef UNICODE
 #endif // UNICODE
 
 #include <easyx.h>
-#include <string>
+#include <cstdint>
+
+using intf8_t = std::int_fast8_t;
 
 // #define DEBUG

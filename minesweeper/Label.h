@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "configer.h"
 #include "BasicWidget.h"
+#include <string>
 
 class Label :
     public BasicWidget

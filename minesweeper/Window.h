@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "configer.h"
+#include <string>
+
 class Window
 {
 public:

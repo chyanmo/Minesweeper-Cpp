@@ -1,12 +1,10 @@
 ﻿#include "Game.h"
 #include <chrono>
-
-#ifdef DEBUG
-#include <iostream>
-#endif // DEBUG
+#include <thread>
+#include <string>
 
 
-Game::Game(uint16_t ROW, uint16_t COL, uint16_t Mine, uint16_t ButtonSize)
+Game::Game(int ROW, int COL, int Mine, int ButtonSize)
     : game_row(ROW), game_col(COL), game_mine(Mine), button_size(ButtonSize) {}
 
 Game::~Game()
@@ -100,7 +98,7 @@ void Game::show() {
         auto time_now = std::chrono::steady_clock::now();
         if (time_now < expect_time)
             std::this_thread::sleep_for(expect_time - time_now);
-        else if (expect_time + 2*interval_ < time_now )
+        else if (expect_time + 2 * interval_ < time_now)
             expect_time = time_now;
     }
 }
@@ -151,7 +149,7 @@ bool Game::lclick_forward()
 }
 
 
-void Game::init(uint16_t ROW, uint16_t COL, uint16_t Mine)
+void Game::init(int ROW, int COL, int Mine)
 {
     started = false;
 

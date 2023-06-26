@@ -1,4 +1,5 @@
 ﻿#include "TimeBox.h"
+#include <string>
 
 TimeBox::TimeBox(int x, int y, int w, int h, COLORREF backgroundcolor, COLORREF textcolor)
     :Label(x, y, w, h, backgroundcolor, "", textcolor), StopWatch() {}

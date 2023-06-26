@@ -6,8 +6,6 @@
 #include "TimeBox.h"
 #include <vector>
 #include <shared_mutex>
-#include <thread>
-
 
 class Game
 {
@@ -34,7 +32,7 @@ public:
         RGB(126,126,126)
     };
 
-    Game(uint16_t ROW = 9, uint16_t COL = 9, uint16_t Mine = 10, uint16_t ButtonSize = 25);
+    Game(int ROW = 9, int COL = 9, int Mine = 10, int ButtonSize = 25);
     ~Game();
 
     void run();
@@ -42,7 +40,7 @@ public:
 private:
 
     void load_icons();
-    void init(uint16_t ROW, uint16_t COL, uint16_t Mine);
+    void init(int ROW, int COL, int Mine);
 
     void init_button();
     void show_button();
@@ -61,12 +59,12 @@ private:
     bool inited = false;
     bool finished = false;
 
-    uint16_t game_row;
-    uint16_t game_col;
-    uint16_t game_mine;
-    uint16_t button_size;
+    int game_row;
+    int game_col;
+    int game_mine;
+    int button_size;
 
-    uint16_t FPS = 30;
+    int FPS = 30;
 
     IMAGE icons[7];
 
