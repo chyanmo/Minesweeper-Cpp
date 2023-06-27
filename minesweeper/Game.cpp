@@ -39,40 +39,38 @@ void Game::run()
 void Game::event_handle() {
     while (true)
     {
-        ::getmessage(&m_msg, EX_MOUSE | EX_KEY);   // 获取消息
+        ::getmessage(&m_msg, EX_MOUSE | EX_KEY);    // 获取消息
 
         switch (m_msg.message) {
-        case WM_KEYDOWN:    // 键盘操作
-            switch (m_msg.vkcode) {
-            case 0x52: // R
-                init(game_row, game_col, game_mine);
+            [[likely]] case WM_LBUTTONDOWN:         // 鼠标操作
+                if (lclick_forward())
+                    update_button();
                 break;
-            case 0x51: // Q
-                init(9, 9, 10);
+            case WM_RBUTTONDOWN:
+                if (rclick_forward())
+                    update_button();
                 break;
-            case 0x57: // W
-                init(16, 16, 40);
+            [[unlikely]] case WM_KEYDOWN:           // 键盘操作
+                switch (m_msg.vkcode) {
+                    case 0x52: // R
+                        init(game_row, game_col, game_mine);
+                        break;
+                    case 0x51: // Q
+                        init(9, 9, 10);
+                        break;
+                    case 0x57: // W
+                        init(16, 16, 40);
+                        break;
+                    case 0x45: // E
+                        init(16, 30, 99);
+                        break;
+                    [[unlikely]] case VK_ESCAPE: {
+                        std::unique_lock<std::shared_mutex> lock(mutex_);
+                        quit_ = true;
+                        return;
+                    }
+                }
                 break;
-            case 0x45: // E
-                init(16, 30, 99);
-                break;
-            case VK_ESCAPE: {
-                std::unique_lock<std::shared_mutex> lock(mutex_);
-                quit_ = true;
-                return;
-            }
-            default:
-                continue;
-            }
-            break;
-        case WM_LBUTTONDOWN:    // 鼠标操作
-            if (lclick_forward())
-                update_button();
-            break;
-        case WM_RBUTTONDOWN:
-            if (rclick_forward())
-                update_button();
-            break;
         }
     }
 }
